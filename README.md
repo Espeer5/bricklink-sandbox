@@ -23,7 +23,9 @@ http://127.0.0.1:8000/api/store/v1
 
 Authentication is not enforced; OAuth headers are ignored. Use dummy credentials locally. The service is intended for local development and CI, not public hosting. To change the bind address, use `cargo run --locked -- --bind 127.0.0.1:9000`.
 
-Each startup seeds lot `1000` with 100 new red 2×4 bricks at USD 0.1500 each, in location `BIN-A01`. State lives in memory and is discarded when the server stops. IDs reset with the store; timestamps use the system clock.
+By default, each startup seeds lot `1000` with 100 new red 2×4 bricks at USD 0.1500 each, in location `BIN-A01`. State lives in memory and is discarded when the server stops. IDs reset with the store; the default clock is the system clock.
+
+For configurable stores and deterministic tests, run `cargo run --locked -- --fixture fixtures/small.json`. Versioned fixtures load inventories and historical orders, support a fixed clock, and optionally define replayable scripts. A 3,000-lot/200-order example is included. See the [fixture format and scenario guide](fixtures/README.md).
 
 ## Try an order
 
@@ -48,7 +50,7 @@ curl http://127.0.0.1:8000/api/store/v1/orders
 curl http://127.0.0.1:8000/api/store/v1/orders/10000/items
 ```
 
-Restore the original seed and clear all orders:
+Restore the selected initial fixture (the default seed has no orders):
 
 ```sh
 curl -X POST http://127.0.0.1:8000/__mock/reset
@@ -70,7 +72,10 @@ curl -X POST http://127.0.0.1:8000/__mock/reset
 | GET | `/api/store/v1/orders/{id}/items` | Read order items as nested batches |
 | GET | `/health` | Server health |
 | POST | `/__mock/orders` | Create an incoming mock order and deduct stock atomically |
-| POST | `/__mock/reset` | Restore seed inventory and clear orders |
+| POST | `/__mock/reset` | Restore selected initial fixture and counters |
+| GET | `/__mock/clock` | Inspect system or fixed clock |
+| POST | `/__mock/clock/advance` | Advance a fixed clock by nonnegative integer seconds |
+| POST | `/__mock/replay` | Restore a fixed-clock fixture and execute its script atomically |
 
 Responses use a `meta`/`data` JSON envelope. Unknown routes or unsupported methods return HTTP 404 in that envelope. Unsupported list filters and unknown create/update fields are rejected rather than silently accepted. Request bodies may be JSON or form-encoded with a `data` field containing JSON; raw URL-encoded JSON is not supported.
 
@@ -93,9 +98,9 @@ The initial scope prioritizes inventory and order ingestion. The following are *
 
 - OAuth signature validation, IP restrictions, or credential failure simulation.
 - Bulk inventory creation, consolidation, retain behavior, tier pricing, or the full inventory schema.
-- Order status/payment updates, cancellations, refunds, shipping calculations, tax, and multiple currencies. Generated orders are unfiled, incoming, USD, and `PENDING`, with empty shipping details.
+- Order status/payment updates, cancellations, refunds, shipping calculations, tax, and multiple currencies. New mock purchases are unfiled, incoming, USD, and `PENDING`, with empty shipping details. Fixtures may seed other supported status labels and filed orders, without simulating lifecycle transitions.
 - Catalog endpoints, price guides, feedback, notifications/webhooks, or fault injection.
-- Persistence, custom seed files, clock control, or production-identical validation/status transitions.
+- Runtime state persistence/export or production-identical validation/status transitions. Authored startup fixtures and fixed-clock replay are supported; these are not runtime snapshots.
 
 Prices accept up to four decimal places; this version rejects excess precision rather than reproducing BrickLink's rounding. Unit prices and inventory quantities are capped at one billion for bounded simulation. Request bodies are limited to 1 MiB.
 
@@ -109,7 +114,7 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-The library exposes `bricklink_sandbox::app()` for an independent seeded Axum router in integration tests. CI runs formatting, linting, and tests. See [CONTRIBUTING.md](CONTRIBUTING.md).
+The library exposes `bricklink_sandbox::app()` for an independent default Axum router and `app_from_fixture(json_text)` for a validated custom store in integration tests. CI runs formatting, linting, and tests. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

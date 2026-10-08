@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "clock": {"mode": "fixed", "now": "2026-01-01T12:00:00.000Z"},
+  "inventories": [
+    {"inventory_id": 1000, "inventory": {"item": {"no": "3001", "type": "PART", "name": "Brick 2 x 4", "category_id": 5}, "color_id": 5, "quantity": 100, "unit_price": "0.1500", "new_or_used": "N", "remarks": "BIN-A01"}},
+    {"inventory_id": 1001, "inventory": {"item": {"no": "3002", "type": "PART", "name": "Brick 2 x 3", "category_id": 5}, "color_id": 1, "quantity": 40, "unit_price": "0.0800", "new_or_used": "U", "remarks": "BIN-A02"}},
+    {"inventory_id": 1002, "inventory": {"item": {"no": "3001", "type": "PART", "name": "Brick 2 x 4", "category_id": 5}, "color_id": 4, "quantity": 0, "unit_price": "0.1200", "new_or_used": "U", "remarks": "BIN-B01"}},
+    {"inventory_id": 1003, "inventory": {"item": {"no": "3001", "type": "PART"}, "color_id": 5, "quantity": 25, "unit_price": "0.1800", "new_or_used": "N", "remarks": "RESERVE-A", "is_stock_room": true, "stock_room_id": "A"}},
+    {"inventory_id": 1004, "inventory": {"item": {"no": "3002", "type": "PART"}, "color_id": 1, "quantity": 30, "unit_price": "0.1000", "new_or_used": "N", "remarks": "RESERVE-B", "is_stock_room": true, "stock_room_id": "B"}},
+    {"inventory_id": 1005, "inventory": {"item": {"no": "3001", "type": "PART"}, "color_id": 4, "quantity": 10, "unit_price": "0.1100", "new_or_used": "U", "remarks": "RESERVE-C", "is_stock_room": true, "stock_room_id": "C"}}
+  ],
+  "orders": [
+    {"order_id": 10000, "items": [{"inventory_id": 1000, "quantity": 2}], "status": "PENDING", "buyer_name": "synthetic_buyer_1", "date_ordered": "2025-12-31T09:00:00Z"},
+    {"order_id": 10001, "items": [{"inventory_id": 1000, "quantity": 4}, {"inventory_id": 1001, "quantity": 6}], "status": "PAID", "buyer_name": "synthetic_buyer_2", "date_ordered": "2025-12-30T09:00:00Z"},
+    {"order_id": 10002, "items": [{"inventory_id": 1002, "quantity": 12}], "status": "SHIPPED", "buyer_name": "synthetic_buyer_3", "date_ordered": "2025-12-29T09:00:00Z"},
+    {"order_id": 10003, "items": [{"inventory_id": 1001, "quantity": 5}], "status": "COMPLETED", "is_filed": true, "buyer_name": "synthetic_buyer_4", "date_ordered": "2025-12-28T09:00:00Z"}
+  ],
+  "steps": [
+    {"action": "advance_clock", "seconds": 60},
+    {"action": "create_order", "items": [{"inventory_id": 1000, "quantity": 3}, {"inventory_id": 1001, "quantity": 2}]},
+    {"action": "update_inventory", "inventory_id": 1001, "update": {"quantity": "+10", "remarks": "BIN-A03"}},
+    {"action": "create_inventory", "inventory": {"item": {"no": "3002", "type": "PART"}, "color_id": 5, "quantity": 20, "unit_price": "0.0900", "new_or_used": "N", "remarks": "BIN-C01"}},
+    {"action": "advance_clock", "seconds": 120},
+    {"action": "create_order", "items": [{"inventory_id": 1006, "quantity": 4}]}
+  ]
+}
