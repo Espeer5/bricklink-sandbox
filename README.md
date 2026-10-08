@@ -77,7 +77,7 @@ curl -X POST http://127.0.0.1:8000/__mock/reset
 | POST | `/__mock/clock/advance` | Advance a fixed clock by nonnegative integer seconds |
 | POST | `/__mock/replay` | Restore a fixed-clock fixture and execute its script atomically |
 
-Responses use a `meta`/`data` JSON envelope. Unknown routes or unsupported methods return HTTP 404 in that envelope. Unsupported list filters and unknown create/update fields are rejected rather than silently accepted. Request bodies may be JSON or form-encoded with a `data` field containing JSON; raw URL-encoded JSON is not supported.
+Responses use a `meta`/`data` JSON envelope. Unknown routes return HTTP 404; unsupported methods on recognized marketplace routes return 405. Unsupported list filters and unknown create/update fields are rejected rather than silently accepted. Request bodies support the documented raw URL-encoded JSON form. Plain JSON and a form-encoded `data` wrapper are also accepted as local extensions. Malformed JSON/encoding returns `INVALID_REQUEST_BODY`; unsupported media types return 415.
 
 Inventory creation requires `item.no`, `item.type`, `color_id`, `quantity`, `unit_price` (a decimal string), and `new_or_used` (`N` or `U`). Optional fields: `item.name`, `item.category_id`, `description`, `remarks`, `is_stock_room`, and `stock_room_id` (`A`, `B`, or `C`). No catalog lookup is performed.
 
@@ -88,7 +88,7 @@ curl -X PUT http://127.0.0.1:8000/api/store/v1/inventories/1000 \
   -H 'Content-Type: application/json' -d '{"quantity":"+10"}'
 ```
 
-Inventory filters support comma-separated inclusion values and `-` exclusions, case-insensitively. Implemented inventory statuses: `Y` (positive available quantity), `N` (zero available quantity), `S` (stockroom A), `B`, and `C`. Reserved inventory is not modeled. Order listing defaults to `direction=in&filed=false`; outgoing orders are always empty.
+Inventory filters support comma-separated inclusion values and `-` exclusions, case-insensitively. Implemented inventory statuses: `Y` (positive available quantity), `N` (zero available quantity), `S` (stockroom A), `B`, and `C`. Reserved inventory is not modeled. Order listing defaults to `direction=in&filed=false` and returns summaries; fetch individual orders for detail. Outgoing orders are always empty.
 
 Mock orders aggregate duplicate lot IDs before checking availability. Invalid or oversold orders leave all stock unchanged. A shared lock serializes stock mutations; concurrent orders cannot consume the same remaining quantity. Order items preserve their purchase-time prices and details. Zero-quantity lots remain in the store.
 
@@ -102,9 +102,11 @@ The initial scope prioritizes inventory and order ingestion. The following are *
 - Catalog endpoints, price guides, feedback, notifications/webhooks, or fault injection.
 - Runtime state persistence/export or production-identical validation/status transitions. Authored startup fixtures and fixed-clock replay are supported; these are not runtime snapshots.
 
-Prices accept up to four decimal places; this version rejects excess precision rather than reproducing BrickLink's rounding. Unit prices and inventory quantities are capped at one billion for bounded simulation. Request bodies are limited to 1 MiB.
+Prices normalize upward to four decimal places, interpreting the manual's rounding-up instruction as ceiling for nonnegative values. Precise live rounding edge cases remain unverified. Unit prices and inventory quantities are capped at one billion for bounded simulation. Request bodies are limited to 1 MiB.
 
-The [BrickLink Store API entry point](https://www.bricklink.com/v2/api/welcome.page), [current manual](https://www.bricklink.com/v3/api.page), and [older static reference](https://static.bricklink.com/alpha/default/api_wiki.html) informed this subset. The static reference is historical; passing these tests does not establish full compatibility with the live service. Future endpoint work should verify current documentation and add contract examples with synthetic data.
+The [compatibility matrix and audit](docs/compatibility.md) record current official sources, field types/defaults, verified shapes, deliberate deviations, and unresolved documentation conflicts. The source-labeled contract suite runs offline with synthetic data. Passing it does not prove full production equivalence.
+
+The [BrickLink Store API entry point](https://www.bricklink.com/v2/api/welcome.page), [current manual](https://www.bricklink.com/v3/api.page), and [older static reference](https://static.bricklink.com/alpha/default/api_wiki.html) provide background. The audit uses the current manual's publicly served content bundle; the static reference is historical and is not the contract suite's verification source. Future endpoint work should verify current documentation and add contract examples with synthetic data.
 
 ## Development
 

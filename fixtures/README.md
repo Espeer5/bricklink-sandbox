@@ -71,13 +71,13 @@ Timestamps accept UTC or an explicit offset and normalize to UTC with three frac
 | `item.category_id` | Unsigned integer | `0` |
 | `color_id` | Unsigned integer | Required |
 | `quantity` | Integer, 0 through 1,000,000,000 | Required |
-| `unit_price` | Decimal string, 0 through 1,000,000,000, at most four decimal places | Required |
+| `unit_price` | Decimal string, 0 through 1,000,000,000, rounded upward to four decimal places | Required |
 | `new_or_used` | `N` or `U` | Required |
 | `description`, `remarks` | Strings | Empty strings |
 | `is_stock_room` | Boolean | `false` |
 | `stock_room_id` | `A`, `B`, or `C` | `A` |
 
-This is the existing simulator inventory subset, not the full BrickLink schema. Prices normalize to four decimal places. Lot quantities are **current opening stock**, not stock before historical orders.
+This is the existing simulator inventory subset, not the full BrickLink schema. Prices normalize upward to four decimal places under the documented simulator rounding interpretation. Lot quantities are **current opening stock**, not stock before historical orders.
 
 ## Historical order entries
 
