@@ -1,24 +1,96 @@
 {
   "version": 1,
-  "verified_at": "2026-10-08T01:18:37Z",
-  "verification_method": "Read-only inspection of the current public API manual's React content bundle referenced by the live API page. No authenticated API calls or production writes were made.",
+  "verified_at": "2026-10-08T01:34:22Z",
+  "verification_method": "Read-only inspection of the current public API manual's React content bundle referenced by the live API page. No authenticated API calls or production writes were made. Order lifecycle audit also reads the public order/payment help pages; help UI restrictions are applied as an explicit simulator interpretation, not proof of identical API validation.",
   "manual_url": "https://www.bricklink.com/v3/api.page",
   "bundle_url": "https://static2.bricklink.com/_build/js/Api.build.js?4aa7913da9cc52c143406e393eee58f7",
   "bundle_sha256": "bd175847806b46d742129c753ea5329b5f8b3ec58eee74dad6216a4a49b1a256",
   "sources": {
-    "general-notes": {"url": "https://www.bricklink.com/v3/api.page?page=general-notes", "component": "R", "findings": "UTF-8; ISO8601 timestamps; four decimal places with rounding up; URL-encoded JSON for PUT/POST; query parameters URL-encoded; meta/data envelope and potentially empty DELETE body."},
-    "error-handling": {"url": "https://www.bricklink.com/v3/api.page?page=error-handling", "component": "Y", "findings": "Named HTTP result codes: 200, 201, 204, 400 (URI/body/parameter errors), 401, 403, 404, 405, 415, 422, 500."},
-    "auth": {"url": "https://www.bricklink.com/v3/api.page?page=auth", "component": "x", "findings": "Authentication may be provided in an Authorization header or Authorization query parameter. Validation is not implemented by this simulator."},
-    "get-inventories": {"url": "https://www.bricklink.com/v3/api.page?page=get-inventories", "component": "Ht", "findings": "GET /inventories; no body; item_type/status/category_id/color_id include/exclude filters; returns list of inventory summaries."},
-    "get-inventory": {"url": "https://www.bricklink.com/v3/api.page?page=get-inventory", "component": "Jt", "findings": "GET /inventories/{inventory_id}; integer ID; no body; inventory resource."},
-    "create-inventory": {"url": "https://www.bricklink.com/v3/api.page?page=create-inventory", "component": "sn", "findings": "POST inventory resource; method table includes trailing slash, example omits it; returns created inventory. Lists more writable fields than the simulator supports."},
-    "update-inventory": {"url": "https://www.bricklink.com/v3/api.page?page=update-inventory", "component": "On", "findings": "PUT inventory by integer ID; signed quantity delta rather than absolute replacement; editable price/description/remarks and additional unsupported inventory fields. color_id is absent from the writable list."},
-    "delete-inventory": {"url": "https://www.bricklink.com/v3/api.page?page=delete-inventory", "component": "Pn", "findings": "DELETE inventory by integer ID; no body; empty data on success. Exact choice of empty envelope versus empty HTTP body is not specified here."},
-    "get-orders": {"url": "https://www.bricklink.com/v3/api.page?page=get-orders", "component": "re", "findings": "GET /orders; direction defaults in; filed defaults false; status supports inclusion/exclusion; returns summary fields, not full detail. Summary spells grandtotal differently from resource schema."},
-    "get-order": {"url": "https://www.bricklink.com/v3/api.page?page=get-order", "component": "de", "findings": "GET order by integer route parameter; no body; full order resource."},
-    "get-order-items": {"url": "https://www.bricklink.com/v3/api.page?page=get-order-items", "component": "Se", "findings": "GET order items; array of arrays with one inner array per order batch."},
-    "resource-representations-inventory": {"url": "https://www.bricklink.com/v3/api.page?page=resource-representations-inventory", "component": "Ut", "findings": "Inventory field types, condition and stockroom values, fixed-point price, and is_retain sold-out meaning. Requiredness, defaults, null handling, and zero-quantity write effects are not fully specified. Example categoryID conflicts with schema category_id."},
-    "resource-representations-order": {"url": "https://www.bricklink.com/v3/api.page?page=resource-representations-order", "component": "Q", "findings": "Order and order-item fields; decimal prices and totals; currency/display fields. order_id is a string in the table but integer in its example. categoryID example conflicts with category_id schema; cost.grand_total in resource conflicts with summary grandtotal."}
+    "general-notes": {
+      "url": "https://www.bricklink.com/v3/api.page?page=general-notes",
+      "component": "R",
+      "findings": "UTF-8; ISO8601 timestamps; four decimal places with rounding up; URL-encoded JSON for PUT/POST; query parameters URL-encoded; meta/data envelope and potentially empty DELETE body."
+    },
+    "error-handling": {
+      "url": "https://www.bricklink.com/v3/api.page?page=error-handling",
+      "component": "Y",
+      "findings": "Named HTTP result codes: 200, 201, 204, 400 (URI/body/parameter errors), 401, 403, 404, 405, 415, 422, 500."
+    },
+    "auth": {
+      "url": "https://www.bricklink.com/v3/api.page?page=auth",
+      "component": "x",
+      "findings": "Authentication may be provided in an Authorization header or Authorization query parameter. Validation is not implemented by this simulator."
+    },
+    "get-inventories": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-inventories",
+      "component": "Ht",
+      "findings": "GET /inventories; no body; item_type/status/category_id/color_id include/exclude filters; returns list of inventory summaries."
+    },
+    "get-inventory": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-inventory",
+      "component": "Jt",
+      "findings": "GET /inventories/{inventory_id}; integer ID; no body; inventory resource."
+    },
+    "create-inventory": {
+      "url": "https://www.bricklink.com/v3/api.page?page=create-inventory",
+      "component": "sn",
+      "findings": "POST inventory resource; method table includes trailing slash, example omits it; returns created inventory. Lists more writable fields than the simulator supports."
+    },
+    "update-inventory": {
+      "url": "https://www.bricklink.com/v3/api.page?page=update-inventory",
+      "component": "On",
+      "findings": "PUT inventory by integer ID; signed quantity delta rather than absolute replacement; editable price/description/remarks and additional unsupported inventory fields. color_id is absent from the writable list."
+    },
+    "delete-inventory": {
+      "url": "https://www.bricklink.com/v3/api.page?page=delete-inventory",
+      "component": "Pn",
+      "findings": "DELETE inventory by integer ID; no body; empty data on success. Exact choice of empty envelope versus empty HTTP body is not specified here."
+    },
+    "get-orders": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-orders",
+      "component": "re",
+      "findings": "GET /orders; direction defaults in; filed defaults false; status supports inclusion/exclusion; returns summary fields, not full detail. Summary spells grandtotal differently from resource schema."
+    },
+    "get-order": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-order",
+      "component": "de",
+      "findings": "GET order by integer route parameter; no body; full order resource."
+    },
+    "get-order-items": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-order-items",
+      "component": "Se",
+      "findings": "GET order items; array of arrays with one inner array per order batch."
+    },
+    "resource-representations-inventory": {
+      "url": "https://www.bricklink.com/v3/api.page?page=resource-representations-inventory",
+      "component": "Ut",
+      "findings": "Inventory field types, condition and stockroom values, fixed-point price, and is_retain sold-out meaning. Requiredness, defaults, null handling, and zero-quantity write effects are not fully specified. Example categoryID conflicts with schema category_id."
+    },
+    "resource-representations-order": {
+      "url": "https://www.bricklink.com/v3/api.page?page=resource-representations-order",
+      "component": "Q",
+      "findings": "Order and order-item fields; decimal prices and totals; currency/display fields. order_id is a string in the table but integer in its example. categoryID example conflicts with category_id schema; cost.grand_total in resource conflicts with summary grandtotal."
+    },
+    "update-order": {
+      "url": "https://www.bricklink.com/v3/api.page?page=update-order",
+      "findings": "PUT /orders/{order_id}; writable cost credit/insurance/etc1/etc2/shipping, shipping date_shipped/tracking_no/tracking_link/method_id, remarks, is_filed. Other fields ignored; costs only change on unpaid orders. Returns updated order. Upstream automatically recomputes applicable BrickLink-collected taxes, which this simulator does not implement."
+    },
+    "update-order-status": {
+      "url": "https://www.bricklink.com/v3/api.page?page=update-order-status",
+      "findings": "PUT /orders/{order_id}/status; body field=status, value=status string; empty data response. No complete transition graph specified."
+    },
+    "update-payment-status": {
+      "url": "https://www.bricklink.com/v3/api.page?page=update-payment-status",
+      "findings": "PUT /orders/{order_id}/payment_status; body field=payment_status, value=payment status string; empty data response."
+    },
+    "order-status-help": {
+      "url": "https://www.bricklink.com/help.asp?helpID=41",
+      "findings": "Status definitions and buyer/seller/system ownership; completed-order changes have a one-week window on the order UI. No exhaustive API transition graph."
+    },
+    "payment-status-help": {
+      "url": "https://www.bricklink.com/help.asp?helpID=121",
+      "findings": "Payment status definitions and buyer Sent restriction after seller changes; account settings affect separation of payment and order status. Exact API account-setting behavior is unverified."
+    }
   },
   "historical_reference": {
     "url": "https://static.bricklink.com/alpha/default/api_wiki.html",

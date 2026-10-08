@@ -69,15 +69,20 @@ curl -X POST http://127.0.0.1:8000/__mock/reset
 | DELETE | `/api/store/v1/inventories/{id}` | Delete a lot; HTTP 204 with no body |
 | GET | `/api/store/v1/orders` | List orders; filter by `direction`, `status`, `filed` |
 | GET | `/api/store/v1/orders/{id}` | Read an order |
+| PUT | `/api/store/v1/orders/{id}` | Update permitted charges, tracking, remarks, and filed state |
+| PUT | `/api/store/v1/orders/{id}/status` | Update order status |
+| PUT | `/api/store/v1/orders/{id}/payment_status` | Update payment status |
 | GET | `/api/store/v1/orders/{id}/items` | Read order items as nested batches |
 | GET | `/health` | Server health |
-| POST | `/__mock/orders` | Create an incoming mock order and deduct stock atomically |
+| POST | `/__mock/orders` | Create a configurable mock order; incoming purchases deduct stock atomically |
+| POST | `/__mock/orders/{id}/{action}` | Edit items, cancel, refund, or restock; see lifecycle guide |
+| GET | `/__mock/orders/{id}/state` | Inspect reservations and cumulative refunds |
 | POST | `/__mock/reset` | Restore selected initial fixture and counters |
 | GET | `/__mock/clock` | Inspect system or fixed clock |
 | POST | `/__mock/clock/advance` | Advance a fixed clock by nonnegative integer seconds |
 | POST | `/__mock/replay` | Restore a fixed-clock fixture and execute its script atomically |
 
-Responses use a `meta`/`data` JSON envelope. Unknown routes return HTTP 404; unsupported methods on recognized marketplace routes return 405. Unsupported list filters and unknown create/update fields are rejected rather than silently accepted. Request bodies support the documented raw URL-encoded JSON form. Plain JSON and a form-encoded `data` wrapper are also accepted as local extensions. Malformed JSON/encoding returns `INVALID_REQUEST_BODY`; unsupported media types return 415.
+Responses use a `meta`/`data` JSON envelope. Unknown routes return HTTP 404; unsupported methods on recognized marketplace routes return 405. Unsupported list filters and unknown inventory create/update fields are rejected. Order updates ignore non-writable fields as the current manual specifies. Request bodies support the documented raw URL-encoded JSON form. Plain JSON and a form-encoded `data` wrapper are also accepted as local extensions. Malformed JSON/encoding returns `INVALID_REQUEST_BODY`; unsupported media types return 415.
 
 Inventory creation requires `item.no`, `item.type`, `color_id`, `quantity`, `unit_price` (a decimal string), and `new_or_used` (`N` or `U`). Optional fields: `item.name`, `item.category_id`, `description`, `remarks`, `is_stock_room`, and `stock_room_id` (`A`, `B`, or `C`). No catalog lookup is performed.
 
@@ -88,9 +93,11 @@ curl -X PUT http://127.0.0.1:8000/api/store/v1/inventories/1000 \
   -H 'Content-Type: application/json' -d '{"quantity":"+10"}'
 ```
 
-Inventory filters support comma-separated inclusion values and `-` exclusions, case-insensitively. Implemented inventory statuses: `Y` (positive available quantity), `N` (zero available quantity), `S` (stockroom A), `B`, and `C`. Reserved inventory is not modeled. Order listing defaults to `direction=in&filed=false` and returns summaries; fetch individual orders for detail. Outgoing orders are always empty.
+Inventory filters support comma-separated inclusion values and `-` exclusions, case-insensitively. Implemented inventory statuses: `Y` (positive available quantity), `N` (zero available quantity), `S` (stockroom A), `B`, and `C`. BrickLink’s reserved-inventory listing status is not modeled; the mock lifecycle tracks returnable order units separately. Order listing defaults to `direction=in&filed=false` and returns summaries; fetch individual orders for detail. Both incoming and outgoing orders can be authored using `details.direction`.
 
 Mock orders aggregate duplicate lot IDs before checking availability. Invalid or oversold orders leave all stock unchanged. A shared lock serializes stock mutations; concurrent orders cannot consume the same remaining quantity. Order items preserve their purchase-time prices and details. Zero-quantity lots remain in the store.
+
+For rich buyers, addresses, shipping, payments, multi-currency amounts, and retry-safe lifecycle controls, see the [order lifecycle guide](docs/order-lifecycle.md). Try `cargo run --locked -- --fixture fixtures/lifecycle.json`, then `POST /__mock/replay`.
 
 ## Compatibility limits and roadmap
 
@@ -98,7 +105,7 @@ The initial scope prioritizes inventory and order ingestion. The following are *
 
 - OAuth signature validation, IP restrictions, or credential failure simulation.
 - Bulk inventory creation, consolidation, retain behavior, tier pricing, or the full inventory schema.
-- Order status/payment updates, cancellations, refunds, shipping calculations, tax, and multiple currencies. New mock purchases are unfiled, incoming, USD, and `PENDING`, with empty shipping details. Fixtures may seed other supported status labels and filed orders, without simulating lifecycle transitions.
+- Automatic shipping rates, jurisdictional tax calculations, FX conversion, account-specific payment settings, and complete production lifecycle parity. Explicit charges/tax amounts, currency labels, documented updates, and mock cancellation/refund/restocking are supported.
 - Catalog endpoints, price guides, feedback, notifications/webhooks, or fault injection.
 - Runtime state persistence/export or production-identical validation/status transitions. Authored startup fixtures and fixed-clock replay are supported; these are not runtime snapshots.
 

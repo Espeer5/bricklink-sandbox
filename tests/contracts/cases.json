@@ -1630,7 +1630,7 @@
               "quantity": 102,
               "unit_price": "0.1500",
               "new_or_used": "N",
-              "remarks": "bin + A&B=1 / café %2B",
+              "remarks": "bin + A&B=1 / caf\u00e9 %2B",
               "description": "",
               "is_stock_room": false,
               "stock_room_id": "A",
@@ -1670,7 +1670,7 @@
               "quantity": 102,
               "unit_price": "0.1500",
               "new_or_used": "N",
-              "remarks": "bin + A&B=1 / café %2B",
+              "remarks": "bin + A&B=1 / caf\u00e9 %2B",
               "description": "",
               "is_stock_room": false,
               "stock_room_id": "A",
@@ -1696,7 +1696,7 @@
             "headers": {
               "content-type": "application/json"
             },
-            "body": "{\"quantity\": \"+2\", \"remarks\": \"bin + A&B=1 / café %2B\"}"
+            "body": "{\"quantity\": \"+2\", \"remarks\": \"bin + A&B=1 / caf\u00e9 %2B\"}"
           },
           "expect": {
             "status": 200,
@@ -1712,7 +1712,7 @@
               "quantity": 102,
               "unit_price": "0.1500",
               "new_or_used": "N",
-              "remarks": "bin + A&B=1 / café %2B",
+              "remarks": "bin + A&B=1 / caf\u00e9 %2B",
               "description": "",
               "is_stock_room": false,
               "stock_room_id": "A",
@@ -1754,7 +1754,7 @@
               "quantity": 102,
               "unit_price": "0.1500",
               "new_or_used": "N",
-              "remarks": "bin + A&B=1 / café %2B",
+              "remarks": "bin + A&B=1 / caf\u00e9 %2B",
               "description": "",
               "is_stock_room": false,
               "stock_room_id": "A",
@@ -2859,6 +2859,275 @@
             "status": 400,
             "meta_message": "PARAMETER_MISSING_OR_INVALID",
             "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "order-update-writable-fields",
+      "sources": [
+        "update-order"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Documented writable fields and ignored unknown fields; synthetic charges, numeric method ID and decimal normalization use simulator policy.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/orders/10000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"remarks\": \"Synthetic packing note\", \"is_filed\": true, \"buyer_name\": \"ignored\", \"status\": \"SHIPPED\", \"shipping\": {\"tracking_no\": \"TEST-001\", \"method_id\": 7}, \"cost\": {\"shipping\": \"1.20\", \"coupon\": \"999\"}}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "order_id": 10000,
+              "date_ordered": "2025-12-31T09:00:00.000Z",
+              "date_status_changed": "2025-12-31T09:00:00.000Z",
+              "seller_name": "mock_seller",
+              "store_name": "Mock Brick Store",
+              "buyer_name": "synthetic_buyer_1",
+              "buyer_email": "buyer@example.invalid",
+              "status": "PENDING",
+              "is_filed": true,
+              "remarks": "Synthetic packing note",
+              "total_count": 2,
+              "unique_count": 1,
+              "payment": {
+                "method": "Mock",
+                "status": "None",
+                "currency_code": "USD"
+              },
+              "shipping": {
+                "tracking_no": "TEST-001",
+                "method_id": 7
+              },
+              "cost": {
+                "currency_code": "USD",
+                "subtotal": "0.3000",
+                "grand_total": "1.5000",
+                "shipping": "1.2000"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders/10000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "order_id": 10000,
+              "date_ordered": "2025-12-31T09:00:00.000Z",
+              "date_status_changed": "2025-12-31T09:00:00.000Z",
+              "seller_name": "mock_seller",
+              "store_name": "Mock Brick Store",
+              "buyer_name": "synthetic_buyer_1",
+              "buyer_email": "buyer@example.invalid",
+              "status": "PENDING",
+              "is_filed": true,
+              "remarks": "Synthetic packing note",
+              "total_count": 2,
+              "unique_count": 1,
+              "payment": {
+                "method": "Mock",
+                "status": "None",
+                "currency_code": "USD"
+              },
+              "shipping": {
+                "tracking_no": "TEST-001",
+                "method_id": 7
+              },
+              "cost": {
+                "currency_code": "USD",
+                "subtotal": "0.3000",
+                "grand_total": "1.5000",
+                "shipping": "1.2000"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "order-status-update",
+      "sources": [
+        "update-order-status",
+        "order-status-help"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Documented patch and empty data represented as JSON null. Seller role applied from help; timestamp is local fixed-clock behavior.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/orders/10000/status",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"field\": \"status\", \"value\": \"PROCESSING\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders/10000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "order_id": 10000,
+              "date_ordered": "2025-12-31T09:00:00.000Z",
+              "date_status_changed": "2026-01-01T12:00:00.000Z",
+              "seller_name": "mock_seller",
+              "store_name": "Mock Brick Store",
+              "buyer_name": "synthetic_buyer_1",
+              "buyer_email": "buyer@example.invalid",
+              "status": "PROCESSING",
+              "is_filed": false,
+              "remarks": "",
+              "total_count": 2,
+              "unique_count": 1,
+              "payment": {
+                "method": "Mock",
+                "status": "None",
+                "currency_code": "USD"
+              },
+              "shipping": {},
+              "cost": {
+                "currency_code": "USD",
+                "subtotal": "0.3000",
+                "grand_total": "0.3000",
+                "shipping": "0.0000"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "order-payment-update-locks-cost",
+      "sources": [
+        "update-payment-status",
+        "payment-status-help",
+        "update-order"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Empty data represented as null. Received is treated as settled locally; malformed cost ignored when settled as the method says paid costs cannot change.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/orders/10000/payment_status",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"field\": \"payment_status\", \"value\": \"Received\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/orders/10000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"cost\": {\"shipping\": \"ignored\"}}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "order_id": 10000,
+              "date_ordered": "2025-12-31T09:00:00.000Z",
+              "date_status_changed": "2025-12-31T09:00:00.000Z",
+              "seller_name": "mock_seller",
+              "store_name": "Mock Brick Store",
+              "buyer_name": "synthetic_buyer_1",
+              "buyer_email": "buyer@example.invalid",
+              "status": "PENDING",
+              "is_filed": false,
+              "remarks": "",
+              "total_count": 2,
+              "unique_count": 1,
+              "payment": {
+                "method": "Mock",
+                "status": "Received",
+                "currency_code": "USD"
+              },
+              "shipping": {},
+              "cost": {
+                "currency_code": "USD",
+                "subtotal": "0.3000",
+                "grand_total": "0.3000",
+                "shipping": "0.0000"
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders/10000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "order_id": 10000,
+              "date_ordered": "2025-12-31T09:00:00.000Z",
+              "date_status_changed": "2025-12-31T09:00:00.000Z",
+              "seller_name": "mock_seller",
+              "store_name": "Mock Brick Store",
+              "buyer_name": "synthetic_buyer_1",
+              "buyer_email": "buyer@example.invalid",
+              "status": "PENDING",
+              "is_filed": false,
+              "remarks": "",
+              "total_count": 2,
+              "unique_count": 1,
+              "payment": {
+                "method": "Mock",
+                "status": "Received",
+                "currency_code": "USD"
+              },
+              "shipping": {},
+              "cost": {
+                "currency_code": "USD",
+                "subtotal": "0.3000",
+                "grand_total": "0.3000",
+                "shipping": "0.0000"
+              }
+            }
           }
         }
       ]
