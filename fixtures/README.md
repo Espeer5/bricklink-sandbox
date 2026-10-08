@@ -15,6 +15,7 @@ The file is parsed and fully validated **before** the listener is bound. Errors 
 | Included file | Initial data | Script |
 | --- | --- | --- |
 | `small.json` | 6 lots, 4 historical orders; three colors, new/used pieces, storage locations, a depleted lot, all three stockrooms, pending/paid/shipped/completed orders, one filed order | Advance clock, purchase, restock/change location, create a lot, advance clock, purchase from new lot |
+| `lifecycle.json` | Incoming EUR shipment and filed outgoing GBP order with synthetic metadata | USD purchase, edit, payment, shipping, partial refund, cancellation, full refund; duplicate retries |
 | `large.json` | 3,000 lots, 200 historical orders; five colors, new/used pieces, unique locations, depleted and stockroom lots, 1–4 lines per order, four statuses, 50 filed orders | Advance clock and make a two-lot purchase |
 
 These are wholly synthetic stores; item labels and colors are not a validated catalog. Regenerate the large file reproducibly with:
@@ -97,11 +98,12 @@ Required: positive unique `order_id` below `u64::MAX`, and nonempty `items`. Eve
 Optional fields:
 
 - `date_ordered`: defaults to the fixture clock; also initializes `date_status_changed`.
-- `status`: `PENDING` (default), `PAID`, `SHIPPED`, or `COMPLETED`. These are fixture labels, not an implementation of status transitions.
+- `status`: `PENDING` by default; all supported labels are listed in the [lifecycle guide](../docs/order-lifecycle.md).
+- `details`: optional rich metadata, direction, currency, charges, payment and shipping; takes precedence over legacy fields. See the lifecycle guide.
 - `is_filed`: boolean, defaults to `false`.
 - `buyer_name`: nonempty string, defaults to `mock_buyer`.
 
-Historical orders **do not deduct stock**. They may reference depleted or stockroom lots, and historical quantity may exceed opening stock. Order items copy the fixture lot's details and price; totals are calculated in USD. The rest of the order uses the simulator's existing synthetic defaults, including empty shipping and placeholder payment data. A status label does not generate payment/shipping transitions. Richer lifecycle behavior remains [issue #3](https://github.com/Espeer5/bricklink-sandbox/issues/3).
+Historical orders **do not deduct stock**. They may reference depleted or stockroom lots, and historical quantity may exceed opening stock. Order items copy the fixture lot's details and price; totals use `details.currency_code` (USD by default). A seeded status label does not generate payment/shipping transitions. Historical `details.inventory_effects:"reserved"` opts into returnable stock already excluded from opening quantities, without a second deduction; default `none` disables stock restitution. See the [lifecycle guide](../docs/order-lifecycle.md) for metadata, amount calculations, and all controls.
 
 New inventory IDs start at `max(1000, highest fixture inventory ID + 1)`. New order IDs start at `max(10000, highest fixture order ID + 1)`. These rules do not depend on fixture array ordering. Exhausted ID space returns an error without committing a new record.
 
@@ -118,8 +120,9 @@ Scripts require a fixed clock and execute sequentially. Supported actions:
 ]
 ```
 
+- `order_action`: required `order_id`, `operation` (`update`, `status`, `payment_status`, `items`, `cancel`, `refund`, `restock`), and `body`. Uses the lifecycle control payload and atomic rules from the lifecycle guide.
 - `advance_clock`: nonnegative integer seconds; overflow is rejected. Zero is allowed.
-- `create_order`: uses normal mock purchase rules and **deducts stock**. Empty/invalid lines or insufficient available stock reject the script.
+- `create_order`: accepts optional `details`; incoming purchases **deduct stock**, outgoing orders do not. Empty/invalid lines or insufficient available stock reject the script.
 - `update_inventory`: existing lot ID plus the supported update payload: signed-string quantity delta, decimal-string unit price, string description and/or remarks.
 - `create_inventory`: the inventory payload described above; the server assigns its ID. Later steps may reference that ID using the documented counter rules.
 
@@ -151,7 +154,7 @@ cmp /tmp/replay-first.json /tmp/replay-second.json
 
 A fixed clock also supports repeatable manually issued requests after reset. Concurrent requests are serialized but their arrival order is not deterministic; use script steps for prescribed ordering.
 
-All these controls are simulator-only. They do not correspond to BrickLink endpoints. Fixed-clock controls do not implement order transitions, webhooks, failures, or persistence.
+All these controls are simulator-only. They do not correspond to BrickLink endpoints. The clock controls time for scripted order transitions; webhooks, fault injection, and persistence remain separate features.
 
 ## Library use
 

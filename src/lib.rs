@@ -2,6 +2,7 @@
 //! Each call to [`app`] or [`app_from_fixture`] creates an independent store.
 
 mod fixture;
+mod orders;
 mod wire;
 pub use fixture::{FixtureError, app_from_fixture};
 
@@ -142,6 +143,8 @@ struct InventoryUpdate {
 #[serde(deny_unknown_fields)]
 struct OrderInput {
     items: Vec<OrderLine>,
+    #[serde(default = "orders::empty_details")]
+    details: Value,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -157,6 +160,7 @@ struct Store {
     inventories: BTreeMap<u64, Inventory>,
     orders: BTreeMap<u64, Value>,
     order_items: BTreeMap<u64, Value>,
+    order_state: BTreeMap<u64, orders::OrderState>,
     next_inventory: u64,
     next_order: u64,
 }
@@ -168,6 +172,7 @@ impl Store {
             inventories: BTreeMap::new(),
             orders: BTreeMap::new(),
             order_items: BTreeMap::new(),
+            order_state: BTreeMap::new(),
             next_inventory: 1000,
             next_order: 10000,
         };
@@ -266,7 +271,16 @@ impl Store {
     }
 
     fn insert_order(&mut self, body: Value, consume_stock: bool) -> ApiResult {
+        let mut staged = self.clone();
+        let result = staged.insert_order_inner(body, consume_stock)?;
+        *self = staged;
+        Ok(result)
+    }
+
+    fn insert_order_inner(&mut self, body: Value, consume_stock: bool) -> ApiResult {
         let input: OrderInput = serde_json::from_value(body).map_err(|e| invalid(e.to_string()))?;
+        let consume_stock =
+            consume_stock && input.details.get("direction").and_then(Value::as_str) != Some("out");
         if input.items.is_empty() {
             return Err(invalid("items must not be empty"));
         }
@@ -326,7 +340,8 @@ impl Store {
         self.orders.insert(id, order.clone());
         self.order_items.insert(id, json!([items]));
         self.next_order = next_id;
-        Ok((StatusCode::CREATED, order))
+        self.configure_order(id, input.details, consume_stock)?;
+        Ok((StatusCode::CREATED, self.orders[&id].clone()))
     }
 
     fn dispatch(
@@ -340,6 +355,18 @@ impl Store {
             ("GET", "/health") => return Ok((StatusCode::OK, json!({"status": "ok"}))),
             ("POST", "/__mock/orders") => return self.create_order(body),
             _ => {}
+        }
+        if let Some(route) = path.strip_prefix("/__mock/orders/") {
+            let parts: Vec<_> = route.split('/').collect();
+            if let [id, action] = parts.as_slice() {
+                let id = id.parse().map_err(|_| invalid("Invalid order ID"))?;
+                if method == "GET" && *action == "state" {
+                    return self.order_effects(id);
+                }
+                if method == "POST" {
+                    return self.order_action(id, action, body);
+                }
+            }
         }
         let route = path
             .strip_prefix(BASE)
@@ -412,7 +439,9 @@ impl Store {
                     .orders
                     .values()
                     .filter(|order| {
-                        direction == "in"
+                        self.order_state
+                            .get(&order["order_id"].as_u64().unwrap())
+                            .is_some_and(|state| state.direction == direction)
                             && order["is_filed"] == json!(filed == "true")
                             && matches(
                                 order["status"].as_str().unwrap_or(""),
@@ -430,6 +459,16 @@ impl Store {
                     ),
                 ))
             }
+            ("PUT", ["orders", id]) => self.order_action(
+                id.parse().map_err(|_| invalid("Invalid order ID"))?,
+                "update",
+                body,
+            ),
+            ("PUT", ["orders", id, action @ ("status" | "payment_status")]) => self.order_action(
+                id.parse().map_err(|_| invalid("Invalid order ID"))?,
+                action,
+                body,
+            ),
             ("GET", ["orders", id]) => Ok((
                 StatusCode::OK,
                 self.orders

@@ -80,7 +80,9 @@ pub(super) fn check_method(method: &str, path: &str) -> Result<(), ApiError> {
     let allowed: &[&str] = match parts.as_slice() {
         ["inventories"] => &["GET", "POST"],
         ["orders"] => &["GET"],
-        ["inventories", id] | ["orders", id] | ["orders", id, "items"] => {
+        ["inventories", id]
+        | ["orders", id]
+        | ["orders", id, "items" | "status" | "payment_status"] => {
             if id.parse::<u64>().is_err() {
                 return Err(ApiError(
                     StatusCode::BAD_REQUEST,
@@ -90,8 +92,12 @@ pub(super) fn check_method(method: &str, path: &str) -> Result<(), ApiError> {
             }
             if parts[0] == "inventories" {
                 &["GET", "PUT", "DELETE"]
-            } else {
+            } else if parts.len() == 2 {
+                &["GET", "PUT"]
+            } else if parts[2] == "items" {
                 &["GET"]
+            } else {
+                &["PUT"]
             }
         }
         _ => return Ok(()),

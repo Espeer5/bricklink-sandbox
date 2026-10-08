@@ -127,6 +127,8 @@ struct FixtureOrder {
     is_filed: bool,
     #[serde(default = "buyer")]
     buyer_name: String,
+    #[serde(default = "orders::empty_details")]
+    details: Value,
 }
 
 fn pending() -> String {
@@ -150,6 +152,12 @@ enum Step {
     },
     CreateOrder {
         items: Vec<OrderLine>,
+        details: Value,
+    },
+    OrderAction {
+        order_id: u64,
+        operation: String,
+        body: Value,
     },
 }
 
@@ -212,11 +220,29 @@ impl Step {
             }
             Some("create_order") => {
                 let input: OrderInput = fields(value, &path)?;
-                Ok(Self::CreateOrder { items: input.items })
+                Ok(Self::CreateOrder {
+                    items: input.items,
+                    details: input.details,
+                })
+            }
+            Some("order_action") => {
+                #[derive(Deserialize)]
+                #[serde(deny_unknown_fields)]
+                struct Action {
+                    order_id: u64,
+                    operation: String,
+                    body: Value,
+                }
+                let input: Action = fields(value, &path)?;
+                Ok(Self::OrderAction {
+                    order_id: input.order_id,
+                    operation: input.operation,
+                    body: input.body,
+                })
             }
             _ => Err(error(
                 format!("{path}.action"),
-                "Expected advance_clock, create_inventory, update_inventory, or create_order",
+                "Expected advance_clock, create_inventory, update_inventory, create_order, or order_action",
             )),
         }
     }
@@ -229,7 +255,14 @@ impl Step {
                 inventory_id,
                 update,
             } => store.update_inventory(*inventory_id, json!(update)),
-            Self::CreateOrder { items } => store.create_order(json!({"items": items})),
+            Self::CreateOrder { items, details } => {
+                store.create_order(json!({"items": items, "details": details}))
+            }
+            Self::OrderAction {
+                order_id,
+                operation,
+                body,
+            } => store.order_action(*order_id, operation, body.clone()),
         }
     }
 }
@@ -357,6 +390,7 @@ impl Sandbox {
             inventories: BTreeMap::new(),
             orders: BTreeMap::new(),
             order_items: BTreeMap::new(),
+            order_state: BTreeMap::new(),
             next_inventory: 1000,
             next_order: 10000,
         };
@@ -397,11 +431,8 @@ impl Sandbox {
                 return Err(error(format!("{path}.order_id"), "Duplicate order ID"));
             }
             validate_lines(&store, &order.items, &format!("{path}.items"), false)?;
-            if !["PENDING", "PAID", "SHIPPED", "COMPLETED"].contains(&order.status.as_str()) {
-                return Err(error(
-                    format!("{path}.status"),
-                    "Supported fixture statuses: PENDING, PAID, SHIPPED, COMPLETED",
-                ));
+            if !orders::STATUSES.contains(&order.status.as_str()) {
+                return Err(error(format!("{path}.status"), "Unsupported order status"));
             }
             if order.buyer_name.is_empty() {
                 return Err(error(format!("{path}.buyer_name"), "Must not be empty"));
@@ -426,6 +457,9 @@ impl Sandbox {
                 saved["date_ordered"] = json!(date);
                 saved["date_status_changed"] = json!(date);
             }
+            store
+                .configure_order(order.order_id, order.details, false)
+                .map_err(|e| error(format!("{path}.details"), e.2))?;
             next_order = next_order.max(store.next_order);
         }
         store.next_order = next_order;
@@ -454,9 +488,12 @@ impl Sandbox {
                 Step::CreateInventory { inventory } => {
                     validate_inventory(inventory, &format!("{path}.inventory"))?
                 }
-                Step::CreateOrder { items } => {
-                    validate_lines(&store, items, &format!("{path}.items"), true)?
-                }
+                Step::CreateOrder { items, details } => validate_lines(
+                    &store,
+                    items,
+                    &format!("{path}.items"),
+                    details.get("direction").and_then(Value::as_str) != Some("out"),
+                )?,
                 Step::UpdateInventory {
                     inventory_id,
                     update,

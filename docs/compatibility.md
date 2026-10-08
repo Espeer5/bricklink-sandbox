@@ -24,11 +24,14 @@ Paths below are relative to `/api/store/v1`. Marketplace GET and DELETE methods 
 | POST `/inventories` | Inventory object. Both `/inventories` and `/inventories/` accepted because current table/example use different forms. Supported create fields below. | 201; created inventory object. | **Partial:** no bulk arrays, consolidation, retain, bulk/tier pricing, complete SET schema, or other omitted writable fields. | [Create inventory][create], [Inventory schema][inventory], [Errors][errors] |
 | PUT `/inventories/{inventory_id}` | Integer ID; optional signed-string `quantity`, string `unit_price`, `description`, `remarks`. Quantity is a delta, not an absolute count. | 200; updated inventory object; missing ID 404. | **Partial:** other documented update fields unsupported. `color_id` is not writable in the current list; historical docs conflict. Null/unknown handling is a local policy. | [Update inventory][update], [Inventory schema][inventory], [Errors][errors] |
 | DELETE `/inventories/{inventory_id}` | Integer ID; no body. | 204; empty HTTP body; later GET returns 404. | **Implemented deletion**, **unverified exact success wire choice:** method page says empty data; general notes allow no body. We select 204 rather than claiming it is the only upstream result. | [Delete inventory][delete], [General notes][general], [Errors][errors] |
-| GET `/orders` | No body. `direction=in` by default (`out` also accepted); `filed=false` by default; optional `status` inclusion/exclusion. | 200; array of summaries, not full order details. Fields below. | **Partial:** only incoming fixtures/purchases exist; outgoing results empty. Summary `grandtotal` spelling conflicts with resource `grand_total`; see ambiguities. | [List orders][list-orders], [Order schema][order] |
-| GET `/orders/{order_id}` | Integer path parameter; no body. | 200; order detail object; missing ID 404. | **Partial:** synthetic USD orders, limited fields; fixture statuses do not implement lifecycle transitions. | [Get order][get-order], [Order schema][order], [Errors][errors] |
+| GET `/orders` | No body. `direction=in` by default (`out` also accepted); `filed=false` by default; optional `status` inclusion/exclusion. | 200; array of summaries, not full order details. Fields below. | **Partial:** incoming/outgoing and filed/unfiled scenarios supported. Summary `grandtotal` spelling conflicts with resource `grand_total`; see ambiguities. | [List orders][list-orders], [Order schema][order] |
+| GET `/orders/{order_id}` | Integer path parameter; no body. | 200; order detail object; missing ID 404. | **Partial:** configurable metadata and nominal currencies; see the [lifecycle guide](order-lifecycle.md). | [Get order][get-order], [Order schema][order], [Errors][errors] |
+| PUT `/orders/{order_id}` | Permitted charges, tracking, remarks, filed state | 200; updated order | Other fields ignored; costs locked after settlement. Automatic upstream tax recomputation unsupported | [Update order](https://www.bricklink.com/v3/api.page?page=update-order) |
+| PUT `/orders/{order_id}/status` | `field:"status"`, `value` | 200; null data | Help-derived role/window restrictions are simulator interpretation, not a complete API transition graph | [Update status](https://www.bricklink.com/v3/api.page?page=update-order-status) |
+| PUT `/orders/{order_id}/payment_status` | `field:"payment_status"`, `value` | 200; null data | Account-specific settings unsupported | [Update payment](https://www.bricklink.com/v3/api.page?page=update-payment-status) |
 | GET `/orders/{order_id}/items` | Integer path parameter; no body. | 200; nested arrays, one inner array per batch; missing order 404. | **Partial:** currently one synthetic batch only; item schema below. No real multi-batch edits, tier prices, or currency conversion. | [Get order items][items], [Order schema][order] |
 
-Only exact base-path segments route to marketplace methods. A lookalike path such as `/api/store/v1inventories` is not accepted. Unsupported methods on these recognized routes return 405; unknown routes return 404. **Caveat:** a method absent from this simulator may exist upstream (for example PUT order). A local 405 is not evidence that BrickLink lacks that operation.
+Only exact base-path segments route to marketplace methods. A lookalike path such as `/api/store/v1inventories` is not accepted. Unsupported methods on these recognized routes return 405; unknown routes return 404. **Caveat:** a method absent from this simulator may exist upstream (for example order invoice operations). A local 405 is not evidence that BrickLink lacks that operation.
 
 ## Supported fields and local defaults
 
@@ -61,7 +64,7 @@ PUT supports only `quantity`, `unit_price`, `description`, and `remarks`. Quanti
 
 Order detail currently emits integer `order_id`; timestamp strings `date_ordered` and `date_status_changed`; strings `seller_name`, `store_name`, `buyer_name`, `buyer_email`, `status`, `remarks`; boolean `is_filed`; integer `total_count`/`unique_count`; and objects `payment`, `shipping`, `cost`.
 
-Local `payment` has string `method`, `status`, `currency_code`; `shipping` is empty; `cost` has string `currency_code` and decimal strings `subtotal`, `grand_total`, `shipping`. The default currency is USD and shipping charge is zero. `payment.date_paid` is omitted because no actual payment is simulated; whether upstream uses omission or null for an unpaid order is **unverified**. Other schema fields, including normalized addresses, taxes, display costs, and invoice flags, are unsupported. [Issue #3](https://github.com/Espeer5/bricklink-sandbox/issues/3) owns richer lifecycle data.
+Local payment/shipping metadata, explicit charges, currency labels, and lifecycle policies are specified in the [order lifecycle guide](order-lifecycle.md). Default orders remain USD with empty shipping, zero shipping charge, and no `date_paid`; omission versus null for unpaid dates remains unverified. Automatic tax, FX conversion, display costs, invoice flags, and multi-batch edits remain unsupported.
 
 GET orders now projects the documented summary fields: `order_id`, `date_ordered`, `seller_name`, `store_name`, `buyer_name`, `total_count`, `unique_count`, `status`; payment method/status/currency and date_paid when present; cost subtotal/grand_total/currency. Full-detail-only fields such as buyer email, remarks, shipping, and date_status_changed are not returned in summaries. Filed filtering uses internal state even though `is_filed` is not projected into summaries.
 
@@ -126,7 +129,9 @@ These have **no BrickLink contract**. They are documented and covered by local i
 | Endpoint | Request / defaults | Response |
 | --- | --- | --- |
 | GET `/health` | No body | 200; data status string |
-| POST `/__mock/orders` | Required nonempty items array of integer inventory_id/quantity | 201; synthetic order, atomic stock deduction; invalid input 400, missing lot 404, unavailable stock 422 |
+| POST `/__mock/orders` | Required nonempty items array of integer inventory_id/quantity; optional details | 201; configurable order, atomic incoming stock deduction; invalid input 400, missing lot 404, unavailable stock 422 |
+| POST `/__mock/orders/{id}/{action}` | items/cancel/refund/restock; [payloads and policies](order-lifecycle.md) | 200; order or effect state; atomic mutations, bounded restitution |
+| GET `/__mock/orders/{id}/state` | No body | 200; reservation and refund state |
 | POST `/__mock/reset` | No body | 200; reset boolean; restores selected fixture |
 | GET `/__mock/clock` | No body | 200; mode/now strings |
 | POST `/__mock/clock/advance` | Required nonnegative integer seconds; fixed clock only | 200; mode/now; invalid mode/input/overflow 400 |
@@ -151,7 +156,7 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-For a contract change, re-read the relevant **current** official pages, update the manifest/date and matrix, classify uncertain behavior honestly, and author a synthetic regression case before adjusting implementation. Keep fixture expectations independent of the response-building code. Full API parity, bulk/retention behavior, catalog operations, order lifecycle, notifications, and strict OAuth remain separately tracked work.
+For a contract change, re-read the relevant **current** official pages, update the manifest/date and matrix, classify uncertain behavior honestly, and author a synthetic regression case before adjusting implementation. Keep fixture expectations independent of the response-building code. Full API parity, bulk/retention behavior, catalog operations, full lifecycle parity, notifications, and strict OAuth remain separately tracked work.
 
 [general]: https://www.bricklink.com/v3/api.page?page=general-notes
 [errors]: https://www.bricklink.com/v3/api.page?page=error-handling
