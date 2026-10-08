@@ -242,7 +242,7 @@ async fn malformed_and_unsupported_requests_have_json_errors() {
         call(&app, "POST", &format!("{BASE}/orders"), json!({}))
             .await
             .0,
-        404
+        405
     );
     assert_eq!(
         call(

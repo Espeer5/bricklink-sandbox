@@ -1,0 +1,2867 @@
+{
+  "version": 1,
+  "seed": "fixtures/small.json",
+  "cases": [
+    {
+      "id": "inventory-list",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 5,
+                "quantity": 100,
+                "unit_price": "0.1500",
+                "new_or_used": "N",
+                "remarks": "BIN-A01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1000,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "Brick 2 x 3",
+                  "category_id": 5
+                },
+                "color_id": 1,
+                "quantity": 40,
+                "unit_price": "0.0800",
+                "new_or_used": "U",
+                "remarks": "BIN-A02",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1001,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 4,
+                "quantity": 0,
+                "unit_price": "0.1200",
+                "new_or_used": "U",
+                "remarks": "BIN-B01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1002,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 5,
+                "quantity": 25,
+                "unit_price": "0.1800",
+                "new_or_used": "N",
+                "remarks": "RESERVE-A",
+                "is_stock_room": true,
+                "stock_room_id": "A",
+                "description": "",
+                "inventory_id": 1003,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 1,
+                "quantity": 30,
+                "unit_price": "0.1000",
+                "new_or_used": "N",
+                "remarks": "RESERVE-B",
+                "is_stock_room": true,
+                "stock_room_id": "B",
+                "description": "",
+                "inventory_id": 1004,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 4,
+                "quantity": 10,
+                "unit_price": "0.1100",
+                "new_or_used": "U",
+                "remarks": "RESERVE-C",
+                "is_stock_room": true,
+                "stock_room_id": "C",
+                "description": "",
+                "inventory_id": 1005,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "inventory-detail",
+      "sources": [
+        "get-inventory",
+        "resource-representations-inventory"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "inventory-create",
+      "sources": [
+        "create-inventory",
+        "error-handling"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/store/v1/inventories",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"item\": {\"no\": \"3003\", \"type\": \"PART\"}, \"color_id\": 0, \"quantity\": 2, \"unit_price\": \"0.20\", \"new_or_used\": \"U\"}"
+          },
+          "expect": {
+            "status": 201,
+            "meta_message": "OK_CREATED",
+            "data": {
+              "item": {
+                "no": "3003",
+                "type": "PART",
+                "name": "",
+                "category_id": 0
+              },
+              "color_id": 0,
+              "quantity": 2,
+              "unit_price": "0.2000",
+              "new_or_used": "U",
+              "description": "",
+              "remarks": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1006,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "inventory-create-trailing-slash",
+      "sources": [
+        "create-inventory"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/store/v1/inventories/",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"item\": {\"no\": \"3003\", \"type\": \"PART\"}, \"color_id\": 0, \"quantity\": 2, \"unit_price\": \"0.20\", \"new_or_used\": \"U\"}"
+          },
+          "expect": {
+            "status": 201,
+            "meta_message": "OK_CREATED",
+            "data": {
+              "item": {
+                "no": "3003",
+                "type": "PART",
+                "name": "",
+                "category_id": 0
+              },
+              "color_id": 0,
+              "quantity": 2,
+              "unit_price": "0.2000",
+              "new_or_used": "U",
+              "description": "",
+              "remarks": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1006,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "signed-delta",
+      "sources": [
+        "update-inventory"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": \"+10\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 110,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": \"-3\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 107,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "delete-empty-response",
+      "sources": [
+        "delete-inventory",
+        "general-notes",
+        "error-handling"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "General notes allow empty DELETE responses; the method page does not uniquely mandate 204 versus an empty-data envelope.",
+      "steps": [
+        {
+          "request": {
+            "method": "DELETE",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 204,
+            "meta_message": "OK_NO_CONTENT",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 404,
+            "meta_message": "RESOURCE_NOT_FOUND",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-type-case",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?item_type=part",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 5,
+                "quantity": 100,
+                "unit_price": "0.1500",
+                "new_or_used": "N",
+                "remarks": "BIN-A01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1000,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "Brick 2 x 3",
+                  "category_id": 5
+                },
+                "color_id": 1,
+                "quantity": 40,
+                "unit_price": "0.0800",
+                "new_or_used": "U",
+                "remarks": "BIN-A02",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1001,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 4,
+                "quantity": 0,
+                "unit_price": "0.1200",
+                "new_or_used": "U",
+                "remarks": "BIN-B01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1002,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 5,
+                "quantity": 25,
+                "unit_price": "0.1800",
+                "new_or_used": "N",
+                "remarks": "RESERVE-A",
+                "is_stock_room": true,
+                "stock_room_id": "A",
+                "description": "",
+                "inventory_id": 1003,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 1,
+                "quantity": 30,
+                "unit_price": "0.1000",
+                "new_or_used": "N",
+                "remarks": "RESERVE-B",
+                "is_stock_room": true,
+                "stock_room_id": "B",
+                "description": "",
+                "inventory_id": 1004,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 4,
+                "quantity": 10,
+                "unit_price": "0.1100",
+                "new_or_used": "U",
+                "remarks": "RESERVE-C",
+                "is_stock_room": true,
+                "stock_room_id": "C",
+                "description": "",
+                "inventory_id": 1005,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-type-exclude",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?item_type=-part",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-color-include",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?color_id=1,4",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "Brick 2 x 3",
+                  "category_id": 5
+                },
+                "color_id": 1,
+                "quantity": 40,
+                "unit_price": "0.0800",
+                "new_or_used": "U",
+                "remarks": "BIN-A02",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1001,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 4,
+                "quantity": 0,
+                "unit_price": "0.1200",
+                "new_or_used": "U",
+                "remarks": "BIN-B01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1002,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 1,
+                "quantity": 30,
+                "unit_price": "0.1000",
+                "new_or_used": "N",
+                "remarks": "RESERVE-B",
+                "is_stock_room": true,
+                "stock_room_id": "B",
+                "description": "",
+                "inventory_id": 1004,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 4,
+                "quantity": 10,
+                "unit_price": "0.1100",
+                "new_or_used": "U",
+                "remarks": "RESERVE-C",
+                "is_stock_room": true,
+                "stock_room_id": "C",
+                "description": "",
+                "inventory_id": 1005,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-color-exclude",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?color_id=-5",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "Brick 2 x 3",
+                  "category_id": 5
+                },
+                "color_id": 1,
+                "quantity": 40,
+                "unit_price": "0.0800",
+                "new_or_used": "U",
+                "remarks": "BIN-A02",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1001,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 4,
+                "quantity": 0,
+                "unit_price": "0.1200",
+                "new_or_used": "U",
+                "remarks": "BIN-B01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1002,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 1,
+                "quantity": 30,
+                "unit_price": "0.1000",
+                "new_or_used": "N",
+                "remarks": "RESERVE-B",
+                "is_stock_room": true,
+                "stock_room_id": "B",
+                "description": "",
+                "inventory_id": 1004,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 4,
+                "quantity": 10,
+                "unit_price": "0.1100",
+                "new_or_used": "U",
+                "remarks": "RESERVE-C",
+                "is_stock_room": true,
+                "stock_room_id": "C",
+                "description": "",
+                "inventory_id": 1005,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-category",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?category_id=5",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 5,
+                "quantity": 100,
+                "unit_price": "0.1500",
+                "new_or_used": "N",
+                "remarks": "BIN-A01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1000,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "Brick 2 x 3",
+                  "category_id": 5
+                },
+                "color_id": 1,
+                "quantity": 40,
+                "unit_price": "0.0800",
+                "new_or_used": "U",
+                "remarks": "BIN-A02",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1001,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 4,
+                "quantity": 0,
+                "unit_price": "0.1200",
+                "new_or_used": "U",
+                "remarks": "BIN-B01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1002,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-category-exclude",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?category_id=-5",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 5,
+                "quantity": 25,
+                "unit_price": "0.1800",
+                "new_or_used": "N",
+                "remarks": "RESERVE-A",
+                "is_stock_room": true,
+                "stock_room_id": "A",
+                "description": "",
+                "inventory_id": 1003,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 1,
+                "quantity": 30,
+                "unit_price": "0.1000",
+                "new_or_used": "N",
+                "remarks": "RESERVE-B",
+                "is_stock_room": true,
+                "stock_room_id": "B",
+                "description": "",
+                "inventory_id": 1004,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 4,
+                "quantity": 10,
+                "unit_price": "0.1100",
+                "new_or_used": "U",
+                "remarks": "RESERVE-C",
+                "is_stock_room": true,
+                "stock_room_id": "C",
+                "description": "",
+                "inventory_id": 1005,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-stockroom-a",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?status=S",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 5,
+                "quantity": 25,
+                "unit_price": "0.1800",
+                "new_or_used": "N",
+                "remarks": "RESERVE-A",
+                "is_stock_room": true,
+                "stock_room_id": "A",
+                "description": "",
+                "inventory_id": 1003,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-stockroom-b-c",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?status=B,C",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 1,
+                "quantity": 30,
+                "unit_price": "0.1000",
+                "new_or_used": "N",
+                "remarks": "RESERVE-B",
+                "is_stock_room": true,
+                "stock_room_id": "B",
+                "description": "",
+                "inventory_id": 1004,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 4,
+                "quantity": 10,
+                "unit_price": "0.1100",
+                "new_or_used": "U",
+                "remarks": "RESERVE-C",
+                "is_stock_room": true,
+                "stock_room_id": "C",
+                "description": "",
+                "inventory_id": 1005,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter-status-exclude",
+      "sources": [
+        "get-inventories"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?status=-S,-B,-C",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 5,
+                "quantity": 100,
+                "unit_price": "0.1500",
+                "new_or_used": "N",
+                "remarks": "BIN-A01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1000,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "Brick 2 x 3",
+                  "category_id": 5
+                },
+                "color_id": 1,
+                "quantity": 40,
+                "unit_price": "0.0800",
+                "new_or_used": "U",
+                "remarks": "BIN-A02",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1001,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 4,
+                "quantity": 0,
+                "unit_price": "0.1200",
+                "new_or_used": "U",
+                "remarks": "BIN-B01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1002,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "orders-default-summary",
+      "sources": [
+        "get-orders",
+        "resource-representations-order"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Use schema spelling grand_total; the summary page spelling grandtotal conflicts. Integer IDs follow examples. Neither wire ambiguity is production-verified.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "order_id": 10000,
+                "date_ordered": "2025-12-31T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_1",
+                "total_count": 2,
+                "unique_count": 1,
+                "status": "PENDING",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "0.3000",
+                  "grand_total": "0.3000"
+                }
+              },
+              {
+                "order_id": 10001,
+                "date_ordered": "2025-12-30T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_2",
+                "total_count": 10,
+                "unique_count": 2,
+                "status": "PAID",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "1.0800",
+                  "grand_total": "1.0800"
+                }
+              },
+              {
+                "order_id": 10002,
+                "date_ordered": "2025-12-29T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_3",
+                "total_count": 12,
+                "unique_count": 1,
+                "status": "SHIPPED",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "1.4400",
+                  "grand_total": "1.4400"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "order-detail",
+      "sources": [
+        "get-order",
+        "resource-representations-order"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders/10000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "order_id": 10000,
+              "date_ordered": "2025-12-31T09:00:00.000Z",
+              "date_status_changed": "2025-12-31T09:00:00.000Z",
+              "seller_name": "mock_seller",
+              "store_name": "Mock Brick Store",
+              "buyer_name": "synthetic_buyer_1",
+              "buyer_email": "buyer@example.invalid",
+              "status": "PENDING",
+              "is_filed": false,
+              "remarks": "",
+              "total_count": 2,
+              "unique_count": 1,
+              "payment": {
+                "method": "Mock",
+                "status": "None",
+                "currency_code": "USD"
+              },
+              "shipping": {},
+              "cost": {
+                "currency_code": "USD",
+                "subtotal": "0.3000",
+                "grand_total": "0.3000",
+                "shipping": "0.0000"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "order-batches",
+      "sources": [
+        "get-order-items",
+        "resource-representations-order"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Nested batches and order-item fields are documented. The simulator produces one batch only; multiple batches remain unsupported.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders/10001/items",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              [
+                {
+                  "inventory_id": 1000,
+                  "item": {
+                    "no": "3001",
+                    "type": "PART",
+                    "name": "Brick 2 x 4",
+                    "category_id": 5
+                  },
+                  "color_id": 5,
+                  "new_or_used": "N",
+                  "unit_price": "0.1500",
+                  "remarks": "BIN-A01",
+                  "description": "",
+                  "quantity": 4,
+                  "unit_price_final": "0.1500",
+                  "disp_unit_price": "0.1500",
+                  "disp_unit_price_final": "0.1500",
+                  "currency_code": "USD",
+                  "disp_currency_code": "USD"
+                },
+                {
+                  "inventory_id": 1001,
+                  "item": {
+                    "no": "3002",
+                    "type": "PART",
+                    "name": "Brick 2 x 3",
+                    "category_id": 5
+                  },
+                  "color_id": 1,
+                  "new_or_used": "U",
+                  "unit_price": "0.0800",
+                  "remarks": "BIN-A02",
+                  "description": "",
+                  "quantity": 6,
+                  "unit_price_final": "0.0800",
+                  "disp_unit_price": "0.0800",
+                  "disp_unit_price_final": "0.0800",
+                  "currency_code": "USD",
+                  "disp_currency_code": "USD"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "orders-status",
+      "sources": [
+        "get-orders"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders?status=pending,shipped",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "order_id": 10000,
+                "date_ordered": "2025-12-31T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_1",
+                "total_count": 2,
+                "unique_count": 1,
+                "status": "PENDING",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "0.3000",
+                  "grand_total": "0.3000"
+                }
+              },
+              {
+                "order_id": 10002,
+                "date_ordered": "2025-12-29T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_3",
+                "total_count": 12,
+                "unique_count": 1,
+                "status": "SHIPPED",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "1.4400",
+                  "grand_total": "1.4400"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "orders-exclude",
+      "sources": [
+        "get-orders"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders?status=-pending",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "order_id": 10001,
+                "date_ordered": "2025-12-30T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_2",
+                "total_count": 10,
+                "unique_count": 2,
+                "status": "PAID",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "1.0800",
+                  "grand_total": "1.0800"
+                }
+              },
+              {
+                "order_id": 10002,
+                "date_ordered": "2025-12-29T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_3",
+                "total_count": 12,
+                "unique_count": 1,
+                "status": "SHIPPED",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "1.4400",
+                  "grand_total": "1.4400"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "orders-filed",
+      "sources": [
+        "get-orders"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders?filed=true",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "order_id": 10003,
+                "date_ordered": "2025-12-28T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_4",
+                "total_count": 5,
+                "unique_count": 1,
+                "status": "COMPLETED",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "0.4000",
+                  "grand_total": "0.4000"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "orders-filed-status",
+      "sources": [
+        "get-orders"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders?filed=true&status=completed",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "order_id": 10003,
+                "date_ordered": "2025-12-28T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_4",
+                "total_count": 5,
+                "unique_count": 1,
+                "status": "COMPLETED",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "0.4000",
+                  "grand_total": "0.4000"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "orders-explicit-default",
+      "sources": [
+        "get-orders"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders?direction=in&filed=false",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "order_id": 10000,
+                "date_ordered": "2025-12-31T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_1",
+                "total_count": 2,
+                "unique_count": 1,
+                "status": "PENDING",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "0.3000",
+                  "grand_total": "0.3000"
+                }
+              },
+              {
+                "order_id": 10001,
+                "date_ordered": "2025-12-30T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_2",
+                "total_count": 10,
+                "unique_count": 2,
+                "status": "PAID",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "1.0800",
+                  "grand_total": "1.0800"
+                }
+              },
+              {
+                "order_id": 10002,
+                "date_ordered": "2025-12-29T09:00:00.000Z",
+                "seller_name": "mock_seller",
+                "store_name": "Mock Brick Store",
+                "buyer_name": "synthetic_buyer_3",
+                "total_count": 12,
+                "unique_count": 1,
+                "status": "SHIPPED",
+                "payment": {
+                  "method": "Mock",
+                  "status": "None",
+                  "currency_code": "USD"
+                },
+                "cost": {
+                  "currency_code": "USD",
+                  "subtotal": "1.4400",
+                  "grand_total": "1.4400"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "raw-urlencoded-json",
+      "sources": [
+        "general-notes",
+        "update-inventory"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/x-www-form-urlencoded"
+            },
+            "body": "%7B%22quantity%22%3A%20%22%2B2%22%2C%20%22remarks%22%3A%20%22bin%20%2B%20A%26B%3D1%20%2F%20caf%C3%A9%20%252B%22%7D"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 102,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "bin + A&B=1 / café %2B",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "raw-urlencoded-no-content-type",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Header absent is tested separately by removing it from this fixture request; manual does not specify a required media type.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {},
+            "body": "%7B%22quantity%22%3A%20%22%2B2%22%2C%20%22remarks%22%3A%20%22bin%20%2B%20A%26B%3D1%20%2F%20caf%5Cu00e9%20%252B%22%7D"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 102,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "bin + A&B=1 / café %2B",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "plain-json-extension",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "simulator-policy",
+      "note": "Plain JSON is a convenience extension; the manual specifies URL-encoded JSON.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": \"+2\", \"remarks\": \"bin + A&B=1 / café %2B\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 102,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "bin + A&B=1 / café %2B",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "data-wrapper-extension",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "simulator-policy",
+      "note": "data= wrapper is an explicit extension, not claimed as the documented upstream wire format.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/x-www-form-urlencoded"
+            },
+            "body": "data=%7B%22quantity%22%3A+%22%2B2%22%2C+%22remarks%22%3A+%22bin+%2B+A%26B%3D1+%2F+caf%C3%A9+%252B%22%7D"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 102,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "bin + A&B=1 / café %2B",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "round-0.12341",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Rounding up is interpreted as ceiling for nonnegative prices. Live edge/tie behavior is unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"unit_price\": \"0.12341\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1235",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "round-0.12345",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Rounding up is interpreted as ceiling for nonnegative prices. Live edge/tie behavior is unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"unit_price\": \"0.12345\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1235",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "round-0.12340",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Rounding up is interpreted as ceiling for nonnegative prices. Live edge/tie behavior is unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"unit_price\": \"0.12340\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1234",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "round-0.00001",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Rounding up is interpreted as ceiling for nonnegative prices. Live edge/tie behavior is unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"unit_price\": \"0.00001\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.0001",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "round-0",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Rounding up is interpreted as ceiling for nonnegative prices. Live edge/tie behavior is unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"unit_price\": \"0\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.0000",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "malformed-json",
+      "sources": [
+        "error-handling"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "INVALID_REQUEST_BODY",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-method",
+      "sources": [
+        "error-handling"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "PATCH",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 405,
+            "meta_message": "METHOD_NOT_ALLOWED",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/store/v1/orders",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{}"
+          },
+          "expect": {
+            "status": 405,
+            "meta_message": "METHOD_NOT_ALLOWED",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-media",
+      "sources": [
+        "error-handling"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/xml"
+            },
+            "body": "<xml/>"
+          },
+          "expect": {
+            "status": 415,
+            "meta_message": "UNSUPPORTED_MEDIA_TYPE",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing-resource",
+      "sources": [
+        "error-handling"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/999",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 404,
+            "meta_message": "RESOURCE_NOT_FOUND",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders/999",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 404,
+            "meta_message": "RESOURCE_NOT_FOUND",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders/999/items",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 404,
+            "meta_message": "RESOURCE_NOT_FOUND",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "invalid-uri",
+      "sources": [
+        "error-handling"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "The error name is documented; mapping an invalid integer path to INVALID_URI is a simulator interpretation.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/not-an-id",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "INVALID_URI",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "reject-absolute-str",
+      "sources": [
+        "update-inventory",
+        "error-handling"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": \"5\"}"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "reject-absolute-int",
+      "sources": [
+        "update-inventory",
+        "error-handling"
+      ],
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Exact synthetic data also locks the documented simulator subset; omitted upstream fields remain partial.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": 5}"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "bad-encoding-39",
+      "sources": [
+        "general-notes",
+        "error-handling"
+      ],
+      "basis": "simulator-policy",
+      "note": "Malformed encoding/UTF-8 is rejected; precise upstream error choice is not specified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/x-www-form-urlencoded"
+            },
+            "body": "%7Bbad"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "INVALID_REQUEST_BODY",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "bad-encoding-40",
+      "sources": [
+        "general-notes",
+        "error-handling"
+      ],
+      "basis": "simulator-policy",
+      "note": "Malformed encoding/UTF-8 is rejected; precise upstream error choice is not specified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/x-www-form-urlencoded"
+            },
+            "body": "%7B%GG"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "INVALID_REQUEST_BODY",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "bad-encoding-41",
+      "sources": [
+        "general-notes",
+        "error-handling"
+      ],
+      "basis": "simulator-policy",
+      "note": "Malformed encoding/UTF-8 is rejected; precise upstream error choice is not specified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/x-www-form-urlencoded"
+            },
+            "body": "%7B%FF%7D"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "INVALID_REQUEST_BODY",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "query-auth-permissive",
+      "sources": [
+        "auth"
+      ],
+      "basis": "simulator-policy",
+      "note": "Documented query location is accepted but auth is intentionally not validated (issue #7).",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?Authorization=%7B%22oauth_token%22%3A%22fake%22%7D",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 5,
+                "quantity": 100,
+                "unit_price": "0.1500",
+                "new_or_used": "N",
+                "remarks": "BIN-A01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1000,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "Brick 2 x 3",
+                  "category_id": 5
+                },
+                "color_id": 1,
+                "quantity": 40,
+                "unit_price": "0.0800",
+                "new_or_used": "U",
+                "remarks": "BIN-A02",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1001,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "Brick 2 x 4",
+                  "category_id": 5
+                },
+                "color_id": 4,
+                "quantity": 0,
+                "unit_price": "0.1200",
+                "new_or_used": "U",
+                "remarks": "BIN-B01",
+                "description": "",
+                "is_stock_room": false,
+                "stock_room_id": "A",
+                "inventory_id": 1002,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 5,
+                "quantity": 25,
+                "unit_price": "0.1800",
+                "new_or_used": "N",
+                "remarks": "RESERVE-A",
+                "is_stock_room": true,
+                "stock_room_id": "A",
+                "description": "",
+                "inventory_id": 1003,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3002",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 1,
+                "quantity": 30,
+                "unit_price": "0.1000",
+                "new_or_used": "N",
+                "remarks": "RESERVE-B",
+                "is_stock_room": true,
+                "stock_room_id": "B",
+                "description": "",
+                "inventory_id": 1004,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART",
+                  "name": "",
+                  "category_id": 0
+                },
+                "color_id": 4,
+                "quantity": 10,
+                "unit_price": "0.1100",
+                "new_or_used": "U",
+                "remarks": "RESERVE-C",
+                "is_stock_room": true,
+                "stock_room_id": "C",
+                "description": "",
+                "inventory_id": 1005,
+                "date_created": "2026-01-01T12:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "zero-quantity-retained",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "The documented is_retain field governs sold-out behavior. This simulator does not implement it yet and deliberately keeps depleted lots (issue #6). Direct zero-write semantics are unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": \"-100\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 0,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 0,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "null-update-noop",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Null optional update fields are treated as omitted. Manual does not specify null semantics.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": null, \"remarks\": null}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "unknown-update-rejected",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Strict unknown-field rejection is local policy, not a documented upstream guarantee.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"quantity\": \"-1\", \"extra\": true}"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        },
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "0.1500",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "unknown-create-rejected",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Strict create-field rejection is local policy.",
+      "steps": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/store/v1/inventories",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"item\": {\"no\": \"3003\", \"type\": \"PART\"}, \"color_id\": 0, \"quantity\": 2, \"unit_price\": \"0.20\", \"new_or_used\": \"U\", \"extra\": true}"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "null-create-rejected",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Null optional create fields are rejected; upstream null handling is unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/store/v1/inventories",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"item\": {\"no\": \"3003\", \"type\": \"PART\"}, \"color_id\": 0, \"quantity\": 2, \"unit_price\": \"0.20\", \"new_or_used\": \"U\", \"description\": null}"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "missing-required-field",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Simulator requires color_id; manual lists fields but does not precisely mark creation requiredness/defaults.",
+      "steps": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/store/v1/inventories",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"item\": {\"no\": \"3003\", \"type\": \"PART\"}, \"quantity\": 2, \"unit_price\": \"0.20\", \"new_or_used\": \"U\"}"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "unknown-filter-rejected",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Unknown filter rejection is local policy.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/inventories?unexpected=true",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "outgoing-orders-empty",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Only incoming synthetic orders exist. Upstream supports outgoing orders (issue #3).",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/orders?direction=out",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "invalid-base-prefix",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Routes require the exact base path, including a slash separator.",
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1inventories",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 404,
+            "meta_message": "RESOURCE_NOT_FOUND",
+            "data": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "round-carry",
+      "sources": [
+        "general-notes"
+      ],
+      "basis": "documentation-interpretation",
+      "note": "Rounding up is interpreted as ceiling for nonnegative prices. Live edge/tie behavior is unverified.",
+      "steps": [
+        {
+          "request": {
+            "method": "PUT",
+            "path": "/api/store/v1/inventories/1000",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"unit_price\":\"0.99999\"}"
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 100,
+              "unit_price": "1.0000",
+              "new_or_used": "N",
+              "remarks": "BIN-A01",
+              "description": "",
+              "is_stock_room": false,
+              "stock_room_id": "A",
+              "inventory_id": 1000,
+              "date_created": "2026-01-01T12:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "reject-parser-precision-loss",
+      "sources": [
+        "resource-representations-inventory"
+      ],
+      "basis": "simulator-policy",
+      "note": "Inputs beyond the exact decimal parser range are rejected rather than silently losing precision; this is a local range limit.",
+      "steps": [
+        {
+          "request": {
+            "method": "POST",
+            "path": "/api/store/v1/inventories",
+            "headers": {
+              "content-type": "application/json"
+            },
+            "body": "{\"item\":{\"no\":\"3003\",\"type\":\"PART\"},\"color_id\":0,\"quantity\":2,\"unit_price\":\"0.00000000000000000000000000001\",\"new_or_used\":\"U\"}"
+          },
+          "expect": {
+            "status": 400,
+            "meta_message": "PARAMETER_MISSING_OR_INVALID",
+            "data": null
+          }
+        }
+      ]
+    }
+  ]
+}

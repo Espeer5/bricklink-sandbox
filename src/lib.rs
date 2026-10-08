@@ -2,6 +2,7 @@
 //! Each call to [`app`] or [`app_from_fixture`] creates an independent store.
 
 mod fixture;
+mod wire;
 pub use fixture::{FixtureError, app_from_fixture};
 
 use axum::{
@@ -12,7 +13,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use chrono::{SecondsFormat, Utc};
-use rust_decimal::Decimal;
+use rust_decimal::{Decimal, RoundingStrategy};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, str::FromStr, sync::Arc};
@@ -57,12 +58,11 @@ fn timestamp() -> String {
 }
 
 fn price(value: &str) -> Result<String, ApiError> {
-    let price = Decimal::from_str(value).map_err(|_| invalid("Invalid decimal price"))?;
-    if price < Decimal::ZERO || price > Decimal::from(1_000_000_000u64) || price.scale() > 4 {
-        return Err(invalid(
-            "Price must be nonnegative, <= 1000000000, with at most four decimal places",
-        ));
+    let price = Decimal::from_str_exact(value).map_err(|_| invalid("Invalid decimal price"))?;
+    if price < Decimal::ZERO || price > Decimal::from(1_000_000_000u64) {
+        return Err(invalid("Price must be nonnegative and <= 1000000000"));
     }
+    let price = price.round_dp_with_strategy(4, RoundingStrategy::ToPositiveInfinity);
     Ok(format!("{price:.4}"))
 }
 
@@ -302,11 +302,7 @@ impl Store {
             total_count = total_count
                 .checked_add(*count)
                 .ok_or_else(|| invalid("Order quantity overflow"))?;
-            let mut item = json!(lot);
-            item["quantity"] = json!(count);
-            item["unit_price_final"] = json!(lot.fields.unit_price);
-            item["currency_code"] = json!("USD");
-            items.push(item);
+            items.push(wire::order_item(lot, *count));
         }
         let id = self.next_order;
         let next_id = id
@@ -345,8 +341,11 @@ impl Store {
             ("POST", "/__mock/orders") => return self.create_order(body),
             _ => {}
         }
-        let route = path.strip_prefix(BASE).ok_or_else(missing)?;
-        let parts: Vec<_> = route.trim_start_matches('/').split('/').collect();
+        let route = path
+            .strip_prefix(BASE)
+            .and_then(|p| p.strip_prefix('/'))
+            .ok_or_else(missing)?;
+        let parts: Vec<_> = route.trim_end_matches('/').split('/').collect();
         match (method, parts.as_slice()) {
             ("POST", ["inventories"]) => self.create_inventory(body),
             ("GET", ["inventories"]) => {
@@ -421,7 +420,15 @@ impl Store {
                             )
                     })
                     .collect();
-                Ok((StatusCode::OK, json!(orders)))
+                Ok((
+                    StatusCode::OK,
+                    json!(
+                        orders
+                            .into_iter()
+                            .map(wire::order_summary)
+                            .collect::<Vec<_>>()
+                    ),
+                ))
             }
             ("GET", ["orders", id]) => Ok((
                 StatusCode::OK,
@@ -458,30 +465,26 @@ async fn handle(State(store): State<SharedStore>, request: Request) -> Response 
 
 async fn execute(store: SharedStore, request: Request) -> ApiResult {
     let (parts, body) = request.into_parts();
+    wire::check_method(parts.method.as_str(), parts.uri.path())?;
     let query = url::form_urlencoded::parse(parts.uri.query().unwrap_or("").as_bytes())
         .into_owned()
+        // Authentication is ignored in permissive mode, in either documented location.
+        .filter(|(key, _)| key != "Authorization")
         .collect();
-    let bytes = to_bytes(body, 1024 * 1024)
-        .await
-        .map_err(|_| invalid("Body exceeds 1 MiB or cannot be read"))?;
-    let body = if bytes.is_empty() {
-        json!({})
-    } else {
-        let content_type = parts
+    let bytes = to_bytes(body, 1024 * 1024).await.map_err(|_| {
+        ApiError(
+            StatusCode::BAD_REQUEST,
+            "INVALID_REQUEST_BODY",
+            "Body exceeds 1 MiB or cannot be read".into(),
+        )
+    })?;
+    let body = wire::decode_body(
+        &bytes,
+        parts
             .headers
             .get("content-type")
-            .and_then(|v| v.to_str().ok())
-            .unwrap_or("application/json");
-        if content_type.starts_with("application/x-www-form-urlencoded") {
-            let fields: BTreeMap<_, _> = url::form_urlencoded::parse(&bytes).into_owned().collect();
-            let raw = fields
-                .get("data")
-                .ok_or_else(|| invalid("Form body requires a data field containing JSON"))?;
-            serde_json::from_str(raw).map_err(|_| invalid("Malformed JSON body"))?
-        } else {
-            serde_json::from_slice(&bytes).map_err(|_| invalid("Malformed JSON body"))?
-        }
-    };
+            .and_then(|v| v.to_str().ok()),
+    )?;
     store
         .lock()
         .await
