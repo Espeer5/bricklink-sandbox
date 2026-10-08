@@ -93,7 +93,7 @@ curl -X PUT http://127.0.0.1:8000/api/store/v1/inventories/1000 \
   -H 'Content-Type: application/json' -d '{"quantity":"+10"}'
 ```
 
-Inventory filters support comma-separated inclusion values and `-` exclusions, case-insensitively. Implemented inventory statuses: `Y` (positive available quantity), `N` (zero available quantity), `S` (stockroom A), `B`, and `C`. Reserved inventory is not modeled. Order listing defaults to `direction=in&filed=false` and returns summaries; fetch individual orders for detail. Both incoming and outgoing orders can be authored using `details.direction`.
+Inventory filters support comma-separated inclusion values and `-` exclusions, case-insensitively. Implemented inventory statuses: `Y` (positive available quantity), `N` (zero available quantity), `S` (stockroom A), `B`, and `C`. BrickLink’s reserved-inventory listing status is not modeled; the mock lifecycle tracks returnable order units separately. Order listing defaults to `direction=in&filed=false` and returns summaries; fetch individual orders for detail. Both incoming and outgoing orders can be authored using `details.direction`.
 
 Mock orders aggregate duplicate lot IDs before checking availability. Invalid or oversold orders leave all stock unchanged. A shared lock serializes stock mutations; concurrent orders cannot consume the same remaining quantity. Order items preserve their purchase-time prices and details. Zero-quantity lots remain in the store.
 
