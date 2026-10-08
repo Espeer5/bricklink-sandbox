@@ -1,5 +1,8 @@
 //! An intentionally limited, stateful BrickLink Store API simulator.
-//! Each call to [`app`] creates an independent seeded store.
+//! Each call to [`app`] or [`app_from_fixture`] creates an independent store.
+
+mod fixture;
+pub use fixture::{FixtureError, app_from_fixture};
 
 use axum::{
     Json, Router,
@@ -16,7 +19,7 @@ use std::{collections::BTreeMap, str::FromStr, sync::Arc};
 use tokio::sync::Mutex;
 
 pub const BASE: &str = "/api/store/v1";
-type SharedStore = Arc<Mutex<Store>>;
+type SharedStore = Arc<Mutex<fixture::Sandbox>>;
 type ApiResult = Result<(StatusCode, Value), ApiError>;
 
 #[derive(Debug)]
@@ -126,7 +129,7 @@ struct Inventory {
     date_created: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct InventoryUpdate {
     quantity: Option<String>,
@@ -135,20 +138,22 @@ struct InventoryUpdate {
     remarks: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct OrderInput {
     items: Vec<OrderLine>,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 struct OrderLine {
     inventory_id: u64,
     quantity: i64,
 }
 
+#[derive(Clone)]
 struct Store {
+    clock: fixture::Clock,
     inventories: BTreeMap<u64, Inventory>,
     orders: BTreeMap<u64, Value>,
     order_items: BTreeMap<u64, Value>,
@@ -159,6 +164,7 @@ struct Store {
 impl Store {
     fn seeded() -> Self {
         let mut store = Self {
+            clock: fixture::Clock::System,
             inventories: BTreeMap::new(),
             orders: BTreeMap::new(),
             order_items: BTreeMap::new(),
@@ -203,14 +209,18 @@ impl Store {
                 "new_or_used must be N/U; stock_room_id must be A/B/C",
             ));
         }
+        let next_id = self
+            .next_inventory
+            .checked_add(1)
+            .ok_or_else(|| invalid("Inventory IDs exhausted"))?;
         let lot = Inventory {
             inventory_id: self.next_inventory,
             fields: input,
-            date_created: timestamp(),
+            date_created: self.clock.now(),
         };
         let data = json!(lot);
         self.inventories.insert(self.next_inventory, lot);
-        self.next_inventory += 1;
+        self.next_inventory = next_id;
         Ok((StatusCode::CREATED, data))
     }
 
@@ -252,6 +262,10 @@ impl Store {
     }
 
     fn create_order(&mut self, body: Value) -> ApiResult {
+        self.insert_order(body, true)
+    }
+
+    fn insert_order(&mut self, body: Value, consume_stock: bool) -> ApiResult {
         let input: OrderInput = serde_json::from_value(body).map_err(|e| invalid(e.to_string()))?;
         if input.items.is_empty() {
             return Err(invalid("items must not be empty"));
@@ -273,7 +287,7 @@ impl Store {
         // Build and validate the complete order before changing any stock.
         for (id, count) in &quantities {
             let lot = self.inventories.get(id).ok_or_else(missing)?;
-            if lot.fields.is_stock_room || lot.fields.quantity < *count {
+            if consume_stock && (lot.fields.is_stock_room || lot.fields.quantity < *count) {
                 return Err(ApiError(
                     StatusCode::UNPROCESSABLE_ENTITY,
                     "RESOURCE_UPDATE_NOT_ALLOWED",
@@ -295,7 +309,10 @@ impl Store {
             items.push(item);
         }
         let id = self.next_order;
-        let time = timestamp();
+        let next_id = id
+            .checked_add(1)
+            .ok_or_else(|| invalid("Order IDs exhausted"))?;
+        let time = self.clock.now();
         let order = json!({"order_id": id, "date_ordered": time, "date_status_changed": time,
             "seller_name": "mock_seller", "store_name": "Mock Brick Store", "buyer_name": "mock_buyer",
             "buyer_email": "buyer@example.invalid", "status": "PENDING", "is_filed": false,
@@ -303,7 +320,7 @@ impl Store {
             "payment": {"method": "Mock", "status": "None", "currency_code": "USD"},
             "shipping": {}, "cost": {"currency_code": "USD", "subtotal": format!("{subtotal:.4}"),
             "grand_total": format!("{subtotal:.4}"), "shipping": "0.0000"}});
-        for (id, count) in quantities {
+        for (id, count) in quantities.into_iter().filter(|_| consume_stock) {
             self.inventories
                 .get_mut(&id)
                 .expect("validated lot")
@@ -312,7 +329,7 @@ impl Store {
         }
         self.orders.insert(id, order.clone());
         self.order_items.insert(id, json!([items]));
-        self.next_order += 1;
+        self.next_order = next_id;
         Ok((StatusCode::CREATED, order))
     }
 
@@ -325,10 +342,6 @@ impl Store {
     ) -> ApiResult {
         match (method, path) {
             ("GET", "/health") => return Ok((StatusCode::OK, json!({"status": "ok"}))),
-            ("POST", "/__mock/reset") => {
-                *self = Self::seeded();
-                return Ok((StatusCode::OK, json!({"reset": true})));
-            }
             ("POST", "/__mock/orders") => return self.create_order(body),
             _ => {}
         }
@@ -479,5 +492,5 @@ async fn execute(store: SharedStore, request: Request) -> ApiResult {
 pub fn app() -> Router {
     Router::new()
         .fallback(handle)
-        .with_state(Arc::new(Mutex::new(Store::seeded())))
+        .with_state(Arc::new(Mutex::new(fixture::Sandbox::seeded())))
 }
