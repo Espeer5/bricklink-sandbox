@@ -1,10 +1,13 @@
 //! An intentionally limited, stateful BrickLink Store API simulator.
 //! Each call to [`app`] or [`app_from_fixture`] creates an independent store.
 
+mod auth;
+mod catalog;
 mod fixture;
 mod orders;
+mod validation;
 mod wire;
-pub use fixture::{FixtureError, app_from_fixture};
+pub use fixture::{FixtureError, app_configured, app_from_fixture};
 
 use axum::{
     Json, Router,
@@ -156,6 +159,7 @@ struct OrderLine {
 
 #[derive(Clone)]
 struct Store {
+    catalog: catalog::Catalog,
     clock: fixture::Clock,
     inventories: BTreeMap<u64, Inventory>,
     orders: BTreeMap<u64, Value>,
@@ -168,6 +172,7 @@ struct Store {
 impl Store {
     fn seeded() -> Self {
         let mut store = Self {
+            catalog: catalog::Catalog::default(),
             clock: fixture::Clock::System,
             inventories: BTreeMap::new(),
             orders: BTreeMap::new(),
@@ -214,6 +219,7 @@ impl Store {
                 "new_or_used must be N/U; stock_room_id must be A/B/C",
             ));
         }
+        self.catalog.check_inventory(&input)?;
         let next_id = self
             .next_inventory
             .checked_add(1)
@@ -373,6 +379,14 @@ impl Store {
             .and_then(|p| p.strip_prefix('/'))
             .ok_or_else(missing)?;
         let parts: Vec<_> = route.trim_end_matches('/').split('/').collect();
+        if method == "GET"
+            && matches!(
+                parts.first(),
+                Some(&"items" | &"colors" | &"categories" | &"item_mapping")
+            )
+        {
+            return self.catalog.dispatch(&parts, query);
+        }
         match (method, parts.as_slice()) {
             ("POST", ["inventories"]) => self.create_inventory(body),
             ("GET", ["inventories"]) => {
@@ -488,28 +502,21 @@ impl Store {
     }
 }
 
+fn response(result: ApiResult) -> Response {
+    match result {
+        Ok((StatusCode::NO_CONTENT, _)) => StatusCode::NO_CONTENT.into_response(),
+        Ok((code, data)) => (code,Json(json!({"meta":{"code":code.as_u16(),"message":if code==StatusCode::CREATED{"OK_CREATED"}else{"OK"},"description":""},"data":data}))).into_response(),
+        Err(error)=>error.into_response(),
+    }
+}
 async fn handle(State(store): State<SharedStore>, request: Request) -> Response {
     match execute(store, request).await {
-        Ok((StatusCode::NO_CONTENT, _)) => StatusCode::NO_CONTENT.into_response(),
-        Ok((code, data)) => (
-            code,
-            Json(json!({"meta": {"code": code.as_u16(),
-            "message": if code == StatusCode::CREATED { "OK_CREATED" } else { "OK" },
-            "description": ""}, "data": data})),
-        )
-            .into_response(),
+        Ok(response) => response,
         Err(error) => error.into_response(),
     }
 }
-
-async fn execute(store: SharedStore, request: Request) -> ApiResult {
+async fn execute(store: SharedStore, request: Request) -> Result<Response, ApiError> {
     let (parts, body) = request.into_parts();
-    wire::check_method(parts.method.as_str(), parts.uri.path())?;
-    let query = url::form_urlencoded::parse(parts.uri.query().unwrap_or("").as_bytes())
-        .into_owned()
-        // Authentication is ignored in permissive mode, in either documented location.
-        .filter(|(key, _)| key != "Authorization")
-        .collect();
     let bytes = to_bytes(body, 1024 * 1024).await.map_err(|_| {
         ApiError(
             StatusCode::BAD_REQUEST,
@@ -517,6 +524,14 @@ async fn execute(store: SharedStore, request: Request) -> ApiResult {
             "Body exceeds 1 MiB or cannot be read".into(),
         )
     })?;
+    if parts.uri.path().starts_with(&format!("{BASE}/")) {
+        store.lock().await.authenticate(&parts, &bytes)?;
+    }
+    wire::check_method(parts.method.as_str(), parts.uri.path())?;
+    let query = url::form_urlencoded::parse(parts.uri.query().unwrap_or("").as_bytes())
+        .into_owned()
+        .filter(|(key, _)| key != "Authorization")
+        .collect();
     let body = wire::decode_body(
         &bytes,
         parts
@@ -524,10 +539,31 @@ async fn execute(store: SharedStore, request: Request) -> ApiResult {
             .get("content-type")
             .and_then(|v| v.to_str().ok()),
     )?;
-    store
+    let fault = store
         .lock()
         .await
-        .dispatch(parts.method.as_str(), parts.uri.path(), &query, body)
+        .validation
+        .select(parts.method.as_str(), parts.uri.path());
+    if let Some(rule) = fault.as_ref().filter(|r| r.phase == "before") {
+        store.lock().await.validation.event(rule, false);
+        if let Some(response) = validation::effect(rule).await {
+            return Ok(response);
+        }
+    }
+    let result = store
+        .lock()
+        .await
+        .dispatch(parts.method.as_str(), parts.uri.path(), &query, body);
+    if let Some(rule) = fault.as_ref().filter(|r| r.phase == "after") {
+        let succeeded = result.is_ok();
+        store.lock().await.validation.event(rule, succeeded);
+        if succeeded {
+            if let Some(response) = validation::effect(rule).await {
+                return Ok(response);
+            }
+        }
+    }
+    Ok(response(result))
 }
 
 /// Build a router with isolated, seeded, in-memory state.

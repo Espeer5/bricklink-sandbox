@@ -1,6 +1,6 @@
 # BrickLink Store API compatibility audit
 
-**Verification date: 2026-10-08 UTC. Scope: the currently implemented endpoint subset.**
+**Verification date: 2026-10-09 UTC. Scope: the currently implemented endpoint subset.**
 
 This audit verifies what the **current public documentation says**, not what a live account does. No authenticated requests, production writes, copied customer data, or real credentials were used. The current manual is client-rendered, so its text was inspected in the public React bundle referenced by the live page. [Source manifest](contract-sources.json) records the source URLs, retrieval time, component identifiers, findings, and bundle SHA-256. The historical static manual is background only; it is not the source of the assertions below.
 
@@ -33,6 +33,26 @@ Paths below are relative to `/api/store/v1`. Marketplace GET and DELETE methods 
 
 Only exact base-path segments route to marketplace methods. A lookalike path such as `/api/store/v1inventories` is not accepted. Unsupported methods on these recognized routes return 405; unknown routes return 404. **Caveat:** a method absent from this simulator may exist upstream (for example order invoice operations). A local 405 is not evidence that BrickLink lacks that operation.
 
+## Catalog and validation additions
+
+The current public manual bundle URL/hash was rechecked on October 9; it remains the bundle recorded in the source manifest. Catalog fields and endpoint contracts are documented there; OAuth normalization uses its linked OAuth 1.0 signing protocol. Tests never fetch live catalog content.
+
+| Endpoint / feature | Status | Contract and limits |
+| --- | --- | --- |
+| GET `/items/{type}/{no}` | Implemented fixture resource | Exact ID and documented type namespace; retains full authored item metadata/extensions, including name, description, category, alternate/obsolete data, language, weight/dimensions, release year and image references. No alias substitution. |
+| GET `/items/{type}/{no}/colors` | Implemented | Authored color ID / quantity list, never merchant stock. |
+| GET `/colors`, `/colors/{id}` | Implemented | Color ID/name/code/type, full fixture data. |
+| GET `/categories`, `/categories/{id}` | Implemented | ID/name/parent; validated acyclic fixture hierarchy. |
+| GET `/items/{type}/{no}/images/{color_id}` | Implemented authored subset | Identity and thumbnail URL; unknown extensions retained. No image download. |
+| GET `/items/{type}/{no}/subsets`, `/supersets` | Partial | Default authored matching/colored groups and entry fields. Optional color, box, instruction, break_minifigs/break_subsets representations are unsupported and rejected, not guessed. Table `appear_as` is used; example spelling conflict remains unverified. |
+| GET `/item_mapping/PART/{no}`, `/item_mapping/{element_id}` | Implemented fixture subset | All or color-filtered PART mappings and multiple reverse matches. No claim of complete or one-to-one provider mappings. |
+| Price guides | Unsupported | No prices, market statistics or pricing formulas are generated from catalog fixtures. |
+| Strict inventory membership | Simulator policy | Optional exact non-obsolete item/color and supplied-category validation. Default permissive mode preserved. No merchant-field enrichment or overwrites. |
+| OAuth and peer IP restrictions | Optional strict simulation | HMAC-SHA1 header / JSON query authentication, local timestamp window, atomic replay checks. No credential registration, production access or verified exact provider window. |
+| Fault controls | Simulator policy | Exact method/path/occurrence rules, before/after dispatch, errors/429/delays/malformed/lost responses; no invented write idempotency. |
+
+See [validation configuration and semantics](validation.md), [catalog fixture](../fixtures/catalog.json), [OAuth fixture](../fixtures/validation.json) and [fault fixture](../fixtures/faults.json). All values are synthetic and MIT-licensed with this repository. Catalog absence, unknown identifiers and unsupported representations remain explicit.
+
 ## Supported fields and local defaults
 
 ### Inventory resources
@@ -43,7 +63,7 @@ Types are based on the [current inventory table][inventory]. Except where indica
 | --- | --- | --- |
 | `inventory_id` | Integer | Server-assigned; not accepted in create payload |
 | `item` | Object | Required |
-| `item.no` | Nonempty string | Required; no catalog existence check |
+| `item.no` | Nonempty string | Required; optional strict fixture catalog membership check |
 | `item.type` | String: MINIFIG, PART, SET, BOOK, GEAR, CATALOG, INSTRUCTION, UNSORTED_LOT, ORIGINAL_BOX | Required; uppercase input |
 | `item.name` | String | Defaults to empty; not populated from a catalog |
 | `item.category_id` | Integer | Defaults to 0; canonical schema spelling |
@@ -56,7 +76,7 @@ Types are based on the [current inventory table][inventory]. Except where indica
 | `stock_room_id` | String: A/B/C | Defaults A, including when not in stockroom |
 | `date_created` | ISO8601 string | Generated from the sandbox clock; UTC milliseconds |
 
-Unsupported documented inventory fields include `color_name`, `completeness`, `bind_id`, `bulk`, `is_retain`, `my_cost`, `sale_rate`, all tier quantity/price fields, and `my_weight`. Their omission makes resource compatibility partial. [Issue #6](https://github.com/Espeer5/bricklink-sandbox/issues/6) owns broader inventory behavior; [issue #13](https://github.com/Espeer5/bricklink-sandbox/issues/13) owns catalog fixtures.
+Unsupported documented inventory fields include `color_name`, `completeness`, `bind_id`, `bulk`, `is_retain`, `my_cost`, `sale_rate`, all tier quantity/price fields, and `my_weight`. Their omission makes resource compatibility partial. [Issue #6](https://github.com/Espeer5/bricklink-sandbox/issues/6) owns broader inventory behavior; [issue #13](https://github.com/Espeer5/bricklink-sandbox/issues/13) is implemented by the separate catalog fixture layer described below.
 
 PUT supports only `quantity`, `unit_price`, `description`, and `remarks`. Quantity input must be a string beginning with `+` or `-`; its output is an integer. Omitted update fields remain unchanged. Explicit null is treated as omitted for these optional update fields. Create fields with null are rejected, including optional string fields. Unknown fields in create/update are rejected; a rejected update leaves the lot unchanged. **Upstream null/unknown semantics are unverified.**
 
@@ -85,7 +105,7 @@ Order-item responses contain only the implemented order-item fields: integer `in
 | Filters | **Implemented subset** | Comma-separated inclusion/exclusion and lowercase type/status examples are documented. Combining inclusion and exclusion uses local include-then-exclude precedence; duplicate query keys use last value and unknown filters fail. Those edge rules are **unverified**. |
 | Optional / null / unknown fields | **Unverified upstream policy** | Resource tables specify types but no uniform null/default/unknown policy. Local rules above are explicitly tested, not promoted to verified upstream behavior. |
 | Nested order batches | **Partial** | [Get items][items] specifies an array of arrays. Shape implemented and tested; multi-batch orders not yet modeled. |
-| Authentication | **Unsupported validation** | [Auth][auth] documents header or Authorization query parameter. Both are ignored in permissive mode; query auth no longer causes an unknown-filter error. No signing, permissions, or nonce verification ([issue #7](https://github.com/Espeer5/bricklink-sandbox/issues/7)). |
+| Authentication | **Implemented optional strict subset** | [Auth][auth] header or Authorization JSON query forms; HMAC-SHA1, dummy credentials, signature encoding, timestamp/nonce validation and optional peer IP policy. Default permissive mode ignores auth. Window, nonce capacity and exact IP restrictions are local policies; registration, TLS and live parity remain unverified. See [validation guide](validation.md). |
 | SSL | **Deliberate deviation** | [General notes][general] require upstream HTTPS. This local service uses HTTP. |
 | Financial totals | **Partial** | Decimal unit-price × quantity sums; no shipping/tax/discount/currency rules beyond synthetic defaults. |
 
@@ -106,7 +126,7 @@ For nonempty responses, `meta` is an object with integer `code`, string `message
 | 415 | UNSUPPORTED_MEDIA_TYPE | Unsupported nonempty-body Content-Type |
 | 422 | RESOURCE_UPDATE_NOT_ALLOWED | Mock purchase exceeds available stock (mock-only policy) |
 
-401 BAD_OAUTH_REQUEST, 403 PERMISSION_DENIED, and 500 INTERNAL_SERVER_ERROR are documented upstream but not deliberately simulated. Future authentication/fault scenarios belong to issues #7/#4. Error selection when multiple inputs are wrong and null versus omitted error `data` are not verified against production. Request bodies have a local 1 MiB limit; loading fixture files is separate.
+401 BAD_OAUTH_REQUEST and 403 PERMISSION_DENIED are now emitted by optional strict authentication/IP checks. Configurable faults can emit these and 500 INTERNAL_SERVER_ERROR. HTTP 429 with Retry-After, response loss, delays and malformed content are generic resilience scenarios, not verified production behavior. Error selection when multiple inputs are wrong and null versus omitted error `data` are not verified against production. Request bodies have a local 1 MiB limit; loading fixture files is separate.
 
 ## Documentation conflicts and unresolved points
 
@@ -129,6 +149,9 @@ These have **no BrickLink contract**. They are documented and covered by local i
 | Endpoint | Request / defaults | Response |
 | --- | --- | --- |
 | GET `/health` | No body | 200; data status string |
+| GET `/__mock/validation` | No body | 200; mode, fault rules/counters/events, nonce count; no credentials/signatures/nonces |
+| POST `/__mock/faults` | Validated rule array | Atomically replace configuration and clear fault history; empty array disables |
+| POST `/__mock/faults/reset` | No body | Clear fault counters/events only |
 | POST `/__mock/orders` | Required nonempty items array of integer inventory_id/quantity; optional details | 201; configurable order, atomic incoming stock deduction; invalid input 400, missing lot 404, unavailable stock 422 |
 | POST `/__mock/orders/{id}/{action}` | items/cancel/refund/restock; [payloads and policies](order-lifecycle.md) | 200; order or effect state; atomic mutations, bounded restitution |
 | GET `/__mock/orders/{id}/state` | No body | 200; reservation and refund state |
@@ -156,7 +179,7 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-For a contract change, re-read the relevant **current** official pages, update the manifest/date and matrix, classify uncertain behavior honestly, and author a synthetic regression case before adjusting implementation. Keep fixture expectations independent of the response-building code. Full API parity, bulk/retention behavior, catalog operations, full lifecycle parity, notifications, and strict OAuth remain separately tracked work.
+For a contract change, re-read the relevant **current** official pages, update the manifest/date and matrix, classify uncertain behavior honestly, and author a synthetic regression case before adjusting implementation. Keep fixture expectations independent of the response-building code. Full API parity, bulk/retention behavior, price guides, exploded/filtered catalog representations, full lifecycle parity and notifications remain outside the implemented subset. Catalog, strict dummy OAuth and fault controls are documented in the validation guide.
 
 [general]: https://www.bricklink.com/v3/api.page?page=general-notes
 [errors]: https://www.bricklink.com/v3/api.page?page=error-handling

@@ -21,11 +21,24 @@ The server listens on `127.0.0.1:8000`. Configure your application's BrickLink b
 http://127.0.0.1:8000/api/store/v1
 ```
 
-Authentication is not enforced; OAuth headers are ignored. Use dummy credentials locally. The service is intended for local development and CI, not public hosting. To change the bind address, use `cargo run --locked -- --bind 127.0.0.1:9000`.
+By default authentication is permissive and OAuth headers are ignored. Optional strict validation checks dummy OAuth credentials, signatures, timestamps, nonces and configured peer IPs. Use only dummy credentials locally. The service is intended for local development and CI, not public hosting. To change the bind address, use `cargo run --locked -- --bind 127.0.0.1:9000`.
 
 By default, each startup seeds lot `1000` with 100 new red 2×4 bricks at USD 0.1500 each, in location `BIN-A01`. State lives in memory and is discarded when the server stops. IDs reset with the store; the default clock is the system clock.
 
 For configurable stores and deterministic tests, run `cargo run --locked -- --fixture fixtures/small.json`. Versioned fixtures load inventories and historical orders, support a fixed clock, and optionally define replayable scripts. A 3,000-lot/200-order example is included. See the [fixture format and scenario guide](fixtures/README.md).
+
+## Validate a catalog client
+
+```sh
+# Synthetic catalog with strict inventory membership; permissive authentication:
+cargo run --locked -- --catalog fixtures/catalog.json
+# Add OAuth signature validation using the documented dummy credentials:
+cargo run --locked -- --catalog fixtures/catalog.json --validation fixtures/validation.json
+# Reproduce an update that commits but loses its response:
+cargo run --locked -- --catalog fixtures/catalog.json --validation fixtures/faults.json
+```
+
+The sample OAuth configuration signs `http://127.0.0.1:8000`; update `auth.base_url` if changing the bind address or port. Combine `auth` and `faults` in one validation file to test both. No live BrickLink account, listings, credentials or outbound requests are needed. [Configuration, supported catalog endpoints, failure scenarios and verification limits](docs/validation.md).
 
 ## Try an order
 
@@ -73,7 +86,17 @@ curl -X POST http://127.0.0.1:8000/__mock/reset
 | PUT | `/api/store/v1/orders/{id}/status` | Update order status |
 | PUT | `/api/store/v1/orders/{id}/payment_status` | Update payment status |
 | GET | `/api/store/v1/orders/{id}/items` | Read order items as nested batches |
+| GET | `/api/store/v1/items/{type}/{no}` | Exact fixture catalog item |
+| GET | `/api/store/v1/items/{type}/{no}/colors` | Known colors |
+| GET | `/api/store/v1/items/{type}/{no}/images/{color_id}` | Authored image reference |
+| GET | `/api/store/v1/items/{type}/{no}/subsets` or `/supersets` | Authored default relationship groups |
+| GET | `/api/store/v1/colors` or `/colors/{id}` | Color list/detail |
+| GET | `/api/store/v1/categories` or `/categories/{id}` | Category list/detail and parent hierarchy |
+| GET | `/api/store/v1/item_mapping/PART/{no}` or `/item_mapping/{element_id}` | Authored element mappings, including ambiguous reverse matches |
 | GET | `/health` | Server health |
+| GET | `/__mock/validation` | Redacted mode, fault rules/counters/events |
+| POST | `/__mock/faults` | Replace fault rules atomically |
+| POST | `/__mock/faults/reset` | Reset fault counters and diagnostics |
 | POST | `/__mock/orders` | Create a configurable mock order; incoming purchases deduct stock atomically |
 | POST | `/__mock/orders/{id}/{action}` | Edit items, cancel, refund, or restock; see lifecycle guide |
 | GET | `/__mock/orders/{id}/state` | Inspect reservations and cumulative refunds |
@@ -84,7 +107,7 @@ curl -X POST http://127.0.0.1:8000/__mock/reset
 
 Responses use a `meta`/`data` JSON envelope. Unknown routes return HTTP 404; unsupported methods on recognized marketplace routes return 405. Unsupported list filters and unknown inventory create/update fields are rejected. Order updates ignore non-writable fields as the current manual specifies. Request bodies support the documented raw URL-encoded JSON form. Plain JSON and a form-encoded `data` wrapper are also accepted as local extensions. Malformed JSON/encoding returns `INVALID_REQUEST_BODY`; unsupported media types return 415.
 
-Inventory creation requires `item.no`, `item.type`, `color_id`, `quantity`, `unit_price` (a decimal string), and `new_or_used` (`N` or `U`). Optional fields: `item.name`, `item.category_id`, `description`, `remarks`, `is_stock_room`, and `stock_room_id` (`A`, `B`, or `C`). No catalog lookup is performed.
+Inventory creation requires `item.no`, `item.type`, `color_id`, `quantity`, `unit_price` (a decimal string), and `new_or_used` (`N` or `U`). Optional fields: `item.name`, `item.category_id`, `description`, `remarks`, `is_stock_room`, and `stock_room_id` (`A`, `B`, or `C`). Catalog membership is permissive by default. An optional strict catalog fixture validates the exact item/color and category on creation, without overwriting supplied names or merchant facts.
 
 Quantity updates use signed delta strings, not absolute values:
 
@@ -103,10 +126,10 @@ For rich buyers, addresses, shipping, payments, multi-currency amounts, and retr
 
 The initial scope prioritizes inventory and order ingestion. The following are **not implemented**:
 
-- OAuth signature validation, IP restrictions, or credential failure simulation.
+- Live credential registration, token issuance, TLS serving, or verified production OAuth window/quota policy. Optional strict dummy OAuth and exact peer-IP validation are supported.
 - Bulk inventory creation, consolidation, retain behavior, tier pricing, or the full inventory schema.
 - Automatic shipping rates, jurisdictional tax calculations, FX conversion, account-specific payment settings, and complete production lifecycle parity. Explicit charges/tax amounts, currency labels, documented updates, and mock cancellation/refund/restocking are supported.
-- Catalog endpoints, price guides, feedback, notifications/webhooks, or fault injection.
+- Price guides, exploded/filtered subset representations, feedback and notifications/webhooks. Fixture-backed catalog reads and deterministic fault injection are supported; see [validation guide](docs/validation.md).
 - Runtime state persistence/export or production-identical validation/status transitions. Authored startup fixtures and fixed-clock replay are supported; these are not runtime snapshots.
 
 Prices normalize upward to four decimal places, interpreting the manual's rounding-up instruction as ceiling for nonnegative values. Precise live rounding edge cases remain unverified. Unit prices and inventory quantities are capped at one billion for bounded simulation. Request bodies are limited to 1 MiB.

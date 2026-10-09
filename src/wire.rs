@@ -78,6 +78,13 @@ pub(super) fn check_method(method: &str, path: &str) -> Result<(), ApiError> {
     };
     let parts: Vec<_> = route.trim_end_matches('/').split('/').collect();
     let allowed: &[&str] = match parts.as_slice() {
+        ["items", _, _]
+        | ["items", _, _, "colors" | "subsets" | "supersets"]
+        | ["items", _, _, "images", _]
+        | ["colors" | "categories"]
+        | ["colors" | "categories", _]
+        | ["item_mapping", _]
+        | ["item_mapping", _, _] => &["GET"],
         ["inventories"] => &["GET", "POST"],
         ["orders"] => &["GET"],
         ["inventories", id]

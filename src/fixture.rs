@@ -99,6 +99,8 @@ struct ClockInput {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Fixture {
+    #[serde(default)]
+    catalog: catalog::Catalog,
     version: u32,
     clock: ClockInput,
     inventories: Vec<FixtureInventory>,
@@ -343,6 +345,7 @@ fn validate_id(id: u64, path: &str) -> Result<(), FixtureError> {
 }
 
 pub(super) struct Sandbox {
+    pub(super) validation: validation::Validation,
     store: Store,
     initial: Store,
     steps: Vec<Step>,
@@ -352,6 +355,7 @@ impl Sandbox {
     pub(super) fn seeded() -> Self {
         let initial = Store::seeded();
         Self {
+            validation: validation::Validation::default(),
             store: initial.clone(),
             initial,
             steps: vec![],
@@ -385,7 +389,12 @@ impl Sandbox {
                 "Scripted scenarios require a fixed clock",
             ));
         }
+        fixture
+            .catalog
+            .validate()
+            .map_err(|e| error("$.catalog", e.2))?;
         let mut store = Store {
+            catalog: fixture.catalog,
             clock,
             inventories: BTreeMap::new(),
             orders: BTreeMap::new(),
@@ -470,6 +479,7 @@ impl Sandbox {
             .map(|(i, value)| Step::parse(value, i))
             .collect::<Result<_, _>>()?;
         let sandbox = Self {
+            validation: validation::Validation::default(),
             initial: store.clone(),
             store,
             steps,
@@ -526,6 +536,16 @@ impl Sandbox {
         Ok((store, json!(results)))
     }
 
+    pub(super) fn authenticate(
+        &mut self,
+        parts: &axum::http::request::Parts,
+        bytes: &[u8],
+    ) -> Result<(), ApiError> {
+        let now = DateTime::parse_from_rfc3339(&self.store.clock.now())
+            .expect("valid clock")
+            .timestamp();
+        self.validation.authenticate(parts, bytes, now)
+    }
     pub(super) fn dispatch(
         &mut self,
         method: &str,
@@ -533,9 +553,13 @@ impl Sandbox {
         query: &BTreeMap<String, String>,
         body: Value,
     ) -> ApiResult {
+        if let Some(result) = self.validation.dispatch(method, path, body.clone()) {
+            return result;
+        }
         match (method, path) {
             ("POST", "/__mock/reset") => {
                 self.store = self.initial.clone();
+                self.validation.reset();
                 Ok((StatusCode::OK, json!({"reset": true})))
             }
             ("GET", "/__mock/clock") => Ok((StatusCode::OK, self.store.clock.value())),
@@ -555,6 +579,7 @@ impl Sandbox {
                 }
                 let (store, results) = self.replayed().map_err(|e| invalid(e.to_string()))?;
                 self.store = store;
+                self.validation.reset();
                 Ok((
                     StatusCode::OK,
                     json!({"steps": results, "clock": self.store.clock.value()}),
@@ -570,6 +595,38 @@ impl Sandbox {
 /// when `POST /__mock/replay` is called; startup validates them without committing.
 pub fn app_from_fixture(text: &str) -> Result<Router, FixtureError> {
     let sandbox = Sandbox::from_fixture(text)?;
+    Ok(Router::new()
+        .fallback(handle)
+        .with_state(Arc::new(Mutex::new(sandbox))))
+}
+
+/// Build a sandbox with optional store, catalog, and validation sidecar JSON.
+/// Validation config accepts dummy OAuth credentials and deterministic fault rules.
+pub fn app_configured(
+    fixture: Option<&str>,
+    catalog: Option<&str>,
+    validation: Option<&str>,
+) -> Result<Router, FixtureError> {
+    let mut sandbox = if let Some(text) = fixture {
+        Sandbox::from_fixture(text)?
+    } else {
+        Sandbox::seeded()
+    };
+    if let Some(text) = catalog {
+        let catalog = catalog::Catalog::parse(text).map_err(|e| error("$.catalog", e.2))?;
+        for lot in sandbox.store.inventories.values() {
+            catalog
+                .check_inventory(&lot.fields)
+                .map_err(|e| error("$.catalog.inventory", e.2))?;
+        }
+        sandbox.store.catalog = catalog.clone();
+        sandbox.initial.catalog = catalog;
+        sandbox.replayed()?;
+    }
+    if let Some(text) = validation {
+        sandbox.validation =
+            validation::Validation::parse(text).map_err(|e| error("$.validation", e.2))?;
+    }
     Ok(Router::new()
         .fallback(handle)
         .with_state(Arc::new(Mutex::new(sandbox))))

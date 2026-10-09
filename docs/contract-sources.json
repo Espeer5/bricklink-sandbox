@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "verified_at": "2026-10-08T01:34:22Z",
+  "verified_at": "2026-10-09T01:22:39.375947+00:00",
   "verification_method": "Read-only inspection of the current public API manual's React content bundle referenced by the live API page. No authenticated API calls or production writes were made. Order lifecycle audit also reads the public order/payment help pages; help UI restrictions are applied as an explicit simulator interpretation, not proof of identical API validation.",
   "manual_url": "https://www.bricklink.com/v3/api.page",
   "bundle_url": "https://static2.bricklink.com/_build/js/Api.build.js?4aa7913da9cc52c143406e393eee58f7",
@@ -19,7 +19,7 @@
     "auth": {
       "url": "https://www.bricklink.com/v3/api.page?page=auth",
       "component": "x",
-      "findings": "Authentication may be provided in an Authorization header or Authorization query parameter. Validation is not implemented by this simulator."
+      "findings": "Current manual specifies OAuth 1.0 HMAC-SHA1, RFC3986-escaped fields in an Authorization header or Authorization JSON query wrapper, Unix timestamp and unique nonce. Strict dummy validation now implemented; window, nonce capacity and IP policy remain local simulation choices."
     },
     "get-inventories": {
       "url": "https://www.bricklink.com/v3/api.page?page=get-inventories",
@@ -90,6 +90,70 @@
     "payment-status-help": {
       "url": "https://www.bricklink.com/help.asp?helpID=121",
       "findings": "Payment status definitions and buyer Sent restriction after seller changes; account settings affect separation of payment and order status. Exact API account-setting behavior is unverified."
+    },
+    "get-item": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-item",
+      "findings": "GET /items/{type}/{no}, no body, catalog item response."
+    },
+    "resource-representations-catalog": {
+      "url": "https://www.bricklink.com/v3/api.page?page=resource-representations-catalog",
+      "findings": "Item names, category, description, alternate_no, images, weight/dimensions, year, obsolete flag and language. Known-color and subset/superset resource shapes. Table appear_as conflicts with example appears_as; simulator follows table."
+    },
+    "get-known-colors": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-known-colors",
+      "findings": "GET /items/{type}/{no}/colors returns known-color list; color_id and quantity."
+    },
+    "get-item-image": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-item-image",
+      "findings": "GET /items/{type}/{no}/images/{color_id}; image resource specifically lists thumbnail_url, type, no."
+    },
+    "get-subsets": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-subsets",
+      "findings": "GET /items/{type}/{no}/subsets; matching groups and entry flags. Optional color/box/instruction/break parameters exist; this simulator only supplies authored default representations."
+    },
+    "get-supersets": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-supersets",
+      "findings": "GET /items/{type}/{no}/supersets; colored containing-item groups. Optional color filter is outside this initial subset."
+    },
+    "get-color-list": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-color-list",
+      "findings": "GET /colors lists color resources; no parameters."
+    },
+    "get-color": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-color",
+      "findings": "GET /colors/{color_id}; one color resource."
+    },
+    "resource-representations-color": {
+      "url": "https://www.bricklink.com/v3/api.page?page=resource-representations-color",
+      "findings": "color_id, color_name, color_code, color_type."
+    },
+    "get-category-list": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-category-list",
+      "findings": "GET /categories lists category resources; no parameters."
+    },
+    "get-category": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-category",
+      "findings": "GET /categories/{category_id}; one category resource."
+    },
+    "resource-representations-category": {
+      "url": "https://www.bricklink.com/v3/api.page?page=resource-representations-category",
+      "findings": "category_id, category_name, parent_id (0 means root)."
+    },
+    "get-elementid": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-elementid",
+      "findings": "GET /item_mapping/{type}/{no}, PART only, optional color_id."
+    },
+    "get-item-number": {
+      "url": "https://www.bricklink.com/v3/api.page?page=get-item-number",
+      "findings": "GET /item_mapping/{element_id}; mappings can be incomplete and not one-to-one."
+    },
+    "resource-representations-mapping": {
+      "url": "https://www.bricklink.com/v3/api.page?page=resource-representations-mapping",
+      "findings": "item.no/type, color_id, color_name, element_id."
+    },
+    "oauth-core": {
+      "url": "https://www.rfc-editor.org/rfc/rfc5849",
+      "findings": "OAuth 1.0 signature normalization, percent encoding, duplicate query parameters and HMAC-SHA1 verification. Used to implement the signing reference linked by BrickLink; local policy is not proof of live auth behavior."
     }
   },
   "historical_reference": {
