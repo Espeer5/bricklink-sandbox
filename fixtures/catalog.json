@@ -1,0 +1,265 @@
+{
+  "validate_inventory": true,
+  "colors": [
+    {
+      "color_id": 0,
+      "color_name": "Not Applicable",
+      "color_code": "000000",
+      "color_type": "N/A"
+    },
+    {
+      "color_id": 5,
+      "color_name": "Synthetic Red",
+      "color_code": "FF0000",
+      "color_type": "Solid"
+    },
+    {
+      "color_id": 11,
+      "color_name": "Synthetic Black",
+      "color_code": "000000",
+      "color_type": "Solid"
+    }
+  ],
+  "categories": [
+    {
+      "category_id": 1,
+      "category_name": "Synthetic catalog",
+      "parent_id": 0
+    },
+    {
+      "category_id": 5,
+      "category_name": "Bricks",
+      "parent_id": 1
+    },
+    {
+      "category_id": 10,
+      "category_name": "Synthetic Batman",
+      "parent_id": 1
+    }
+  ],
+  "items": [
+    {
+      "item": {
+        "no": "3001",
+        "type": "PART",
+        "name": "Synthetic brick 2 x 4",
+        "category_id": 5,
+        "description": "Synthetic test catalog, not a verified BrickLink record",
+        "alternate_no": "3001alternate",
+        "image_url": "https://example.invalid/image.png",
+        "thumbnail_url": "https://example.invalid/thumb.png",
+        "weight": "1.23",
+        "dim_x": "2.00",
+        "dim_y": "4.00",
+        "dim_z": "1.00",
+        "year_released": 2000,
+        "is_obsolete": false,
+        "language_code": "en",
+        "test_extension": {
+          "retained": true
+        }
+      },
+      "known_colors": [
+        {
+          "color_id": 5,
+          "quantity": 99
+        },
+        {
+          "color_id": 11,
+          "quantity": 99
+        }
+      ],
+      "images": {
+        "5": {
+          "no": "3001",
+          "type": "PART",
+          "thumbnail_url": "https://example.invalid/thumb.png"
+        },
+        "11": {
+          "no": "3001",
+          "type": "PART",
+          "thumbnail_url": "https://example.invalid/thumb.png"
+        }
+      },
+      "subsets": [],
+      "supersets": [
+        {
+          "color_id": 5,
+          "entries": [
+            {
+              "item": {
+                "no": "7784-1",
+                "type": "SET",
+                "name": "Synthetic Batmobile",
+                "category_id": 10
+              },
+              "quantity": 2,
+              "appear_as": "R"
+            }
+          ]
+        }
+      ],
+      "element_mappings": [
+        {
+          "item": {
+            "no": "3001",
+            "type": "PART"
+          },
+          "color_id": 5,
+          "color_name": "Synthetic Red",
+          "element_id": "synthetic-shared-element"
+        },
+        {
+          "item": {
+            "no": "3001",
+            "type": "PART"
+          },
+          "color_id": 11,
+          "color_name": "Synthetic Black",
+          "element_id": "synthetic-shared-element"
+        }
+      ]
+    },
+    {
+      "item": {
+        "no": "3001old",
+        "type": "PART",
+        "name": "Synthetic obsolete variant",
+        "category_id": 5,
+        "description": "Synthetic test catalog, not a verified BrickLink record",
+        "alternate_no": "",
+        "image_url": "https://example.invalid/image.png",
+        "thumbnail_url": "https://example.invalid/thumb.png",
+        "weight": "1.23",
+        "dim_x": "2.00",
+        "dim_y": "4.00",
+        "dim_z": "1.00",
+        "year_released": 2000,
+        "is_obsolete": true,
+        "language_code": "en",
+        "test_extension": {
+          "retained": true
+        }
+      },
+      "known_colors": [
+        {
+          "color_id": 5,
+          "quantity": 99
+        }
+      ],
+      "images": {
+        "5": {
+          "no": "3001old",
+          "type": "PART",
+          "thumbnail_url": "https://example.invalid/thumb.png"
+        }
+      },
+      "subsets": [],
+      "supersets": [],
+      "element_mappings": [
+        {
+          "item": {
+            "no": "3001old",
+            "type": "PART"
+          },
+          "color_id": 5,
+          "color_name": "Synthetic Red",
+          "element_id": "synthetic-shared-element"
+        }
+      ]
+    },
+    {
+      "item": {
+        "no": "7784-1",
+        "type": "SET",
+        "name": "Synthetic Batmobile",
+        "category_id": 10,
+        "description": "Synthetic test catalog, not a verified BrickLink record",
+        "alternate_no": "",
+        "image_url": "https://example.invalid/image.png",
+        "thumbnail_url": "https://example.invalid/thumb.png",
+        "weight": "1.23",
+        "dim_x": "2.00",
+        "dim_y": "4.00",
+        "dim_z": "1.00",
+        "year_released": 2000,
+        "is_obsolete": false,
+        "language_code": "en",
+        "test_extension": {
+          "retained": true
+        }
+      },
+      "known_colors": [
+        {
+          "color_id": 0,
+          "quantity": 99
+        }
+      ],
+      "images": {
+        "0": {
+          "no": "7784-1",
+          "type": "SET",
+          "thumbnail_url": "https://example.invalid/thumb.png"
+        }
+      },
+      "subsets": [
+        {
+          "match_no": 0,
+          "entries": [
+            {
+              "item": {
+                "no": "3001",
+                "type": "PART",
+                "name": "Synthetic brick 2 x 4",
+                "category_id": 5
+              },
+              "color_id": 5,
+              "quantity": 2,
+              "extra_quantity": 0,
+              "is_alternate": false,
+              "is_counterpart": false
+            }
+          ]
+        }
+      ],
+      "supersets": []
+    },
+    {
+      "item": {
+        "no": "sh0001",
+        "type": "MINIFIG",
+        "name": "Synthetic Batman minifigure",
+        "category_id": 10,
+        "description": "Synthetic test catalog, not a verified BrickLink record",
+        "alternate_no": "",
+        "image_url": "https://example.invalid/image.png",
+        "thumbnail_url": "https://example.invalid/thumb.png",
+        "weight": "1.23",
+        "dim_x": "2.00",
+        "dim_y": "4.00",
+        "dim_z": "1.00",
+        "year_released": 2000,
+        "is_obsolete": false,
+        "language_code": "en",
+        "test_extension": {
+          "retained": true
+        }
+      },
+      "known_colors": [
+        {
+          "color_id": 0,
+          "quantity": 99
+        }
+      ],
+      "images": {
+        "0": {
+          "no": "sh0001",
+          "type": "MINIFIG",
+          "thumbnail_url": "https://example.invalid/thumb.png"
+        }
+      },
+      "subsets": [],
+      "supersets": []
+    }
+  ]
+}

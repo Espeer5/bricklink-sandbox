@@ -36,7 +36,7 @@ cargo run --locked --example generate_large_fixture -- fixtures/large.json
 }
 ```
 
-`version`, `clock`, `inventories`, and `orders` are required. Arrays may be empty. `steps` defaults to an empty array. Unknown fields are rejected. Version 1 is the only accepted version.
+`version`, `clock`, `inventories`, and `orders` are required. Arrays may be empty. `steps` defaults to an empty array. An optional `catalog` object embeds the [catalog fixture](../docs/validation.md#catalog-fixtures). `--catalog FILE` replaces the embedded catalog after validating seeded inventories and replay steps. Other unknown fields are rejected. Version 1 is the only accepted version.
 
 Clock choices:
 
@@ -154,8 +154,14 @@ cmp /tmp/replay-first.json /tmp/replay-second.json
 
 A fixed clock also supports repeatable manually issued requests after reset. Concurrent requests are serialized but their arrival order is not deterministic; use script steps for prescribed ordering.
 
-All these controls are simulator-only. They do not correspond to BrickLink endpoints. The clock controls time for scripted order transitions; webhooks, fault injection, and persistence remain separate features.
+All these controls are simulator-only. They do not correspond to BrickLink endpoints. The clock controls time for scripted order transitions; webhooks and persistence remain separate features. HTTP fault rules run around API requests, not internal replay steps. Store reset/replay also clears fault counters/events and OAuth nonce history; configured rules and dummy credentials remain in place.
 
 ## Library use
 
 `bricklink_sandbox::app_from_fixture(json_text)` returns `Result<axum::Router, FixtureError>`. Errors expose `path` and `message`. Every invocation creates independent initial and live state; cloning a returned router intentionally shares that one store. Existing `app()` keeps the built-in fixture and system clock.
+
+## Validation sidecars
+
+`catalog.json` is an authored synthetic catalog (MIT, like the repository) with parts, a variant, a set, a minifigure, colors, hierarchy, images, relationships and ambiguous element mappings. It is compatible with the default seed; it does not claim every item in `small.json` or `large.json` exists in that catalog. With strict membership enabled, inconsistent combinations fail before serving.
+
+`validation.json` contains public dummy OAuth values only, using a local origin and a 300-second simulator window. `faults.json` demonstrates after-commit response loss and a catalog rate limit. Supply these through `--validation`; this sidecar is separate from fixture version 1. [Full guide](../docs/validation.md).

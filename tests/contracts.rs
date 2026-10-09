@@ -4,7 +4,7 @@ use axum::{
     body::{Body, to_bytes},
     http::Request,
 };
-use bricklink_sandbox::app_from_fixture;
+use bricklink_sandbox::{app_configured, app_from_fixture};
 use serde_json::Value;
 use std::collections::BTreeSet;
 use tower::ServiceExt;
@@ -48,7 +48,21 @@ async fn source_backed_contract_cases() {
             );
         }
         // Every case starts with fresh state; steps within a case share that state.
-        let app = app_from_fixture(include_str!("../fixtures/small.json")).unwrap();
+        let app = if case["catalog"] == true {
+            let fixture = r#"{"version":1,"clock":{"mode":"fixed","now":"2026-01-01T00:00:00Z"},"inventories":[],"orders":[]}"#;
+            app_configured(
+                Some(fixture),
+                Some(include_str!("../fixtures/catalog.json")),
+                if case["validation"] == true {
+                    Some(include_str!("../fixtures/validation.json"))
+                } else {
+                    None
+                },
+            )
+            .unwrap()
+        } else {
+            app_from_fixture(include_str!("../fixtures/small.json")).unwrap()
+        };
         assert!(
             !case["steps"].as_array().unwrap().is_empty(),
             "{name}: empty contract"

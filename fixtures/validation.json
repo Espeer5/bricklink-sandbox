@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "base_url": "http://127.0.0.1:8000",
+    "consumer_key": "dummy-consumer",
+    "consumer_secret": "dummy-consumer-secret",
+    "token": "dummy-token",
+    "token_secret": "dummy-token-secret",
+    "timestamp_window_seconds": 300
+  },
+  "faults": []
+}

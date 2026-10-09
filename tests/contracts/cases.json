@@ -3131,6 +3131,465 @@
           }
         }
       ]
+    },
+    {
+      "id": "catalog-item",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-item",
+        "resource-representations-catalog"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/items/PART/3001",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "no": "3001",
+              "type": "PART",
+              "name": "Synthetic brick 2 x 4",
+              "category_id": 5,
+              "description": "Synthetic test catalog, not a verified BrickLink record",
+              "alternate_no": "3001alternate",
+              "image_url": "https://example.invalid/image.png",
+              "thumbnail_url": "https://example.invalid/thumb.png",
+              "weight": "1.23",
+              "dim_x": "2.00",
+              "dim_y": "4.00",
+              "dim_z": "1.00",
+              "year_released": 2000,
+              "is_obsolete": false,
+              "language_code": "en",
+              "test_extension": {
+                "retained": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-known-colors",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-known-colors"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/items/PART/3001/colors",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "color_id": 5,
+                "quantity": 99
+              },
+              {
+                "color_id": 11,
+                "quantity": 99
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-image",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-item-image"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/items/PART/3001/images/5",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "no": "3001",
+              "type": "PART",
+              "thumbnail_url": "https://example.invalid/thumb.png"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-subsets",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-subsets"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/items/SET/7784-1/subsets",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "match_no": 0,
+                "entries": [
+                  {
+                    "item": {
+                      "no": "3001",
+                      "type": "PART",
+                      "name": "Synthetic brick 2 x 4",
+                      "category_id": 5
+                    },
+                    "color_id": 5,
+                    "quantity": 2,
+                    "extra_quantity": 0,
+                    "is_alternate": false,
+                    "is_counterpart": false
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-supersets",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-supersets"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/items/PART/3001/supersets",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "color_id": 5,
+                "entries": [
+                  {
+                    "item": {
+                      "no": "7784-1",
+                      "type": "SET",
+                      "name": "Synthetic Batmobile",
+                      "category_id": 10
+                    },
+                    "quantity": 2,
+                    "appear_as": "R"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-colors",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-color-list",
+        "resource-representations-color"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/colors",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "color_id": 0,
+                "color_name": "Not Applicable",
+                "color_code": "000000",
+                "color_type": "N/A"
+              },
+              {
+                "color_id": 5,
+                "color_name": "Synthetic Red",
+                "color_code": "FF0000",
+                "color_type": "Solid"
+              },
+              {
+                "color_id": 11,
+                "color_name": "Synthetic Black",
+                "color_code": "000000",
+                "color_type": "Solid"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-color",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-color"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/colors/5",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "color_id": 5,
+              "color_name": "Synthetic Red",
+              "color_code": "FF0000",
+              "color_type": "Solid"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-categories",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-category-list",
+        "resource-representations-category"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/categories",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "category_id": 1,
+                "category_name": "Synthetic catalog",
+                "parent_id": 0
+              },
+              {
+                "category_id": 5,
+                "category_name": "Bricks",
+                "parent_id": 1
+              },
+              {
+                "category_id": 10,
+                "category_name": "Synthetic Batman",
+                "parent_id": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-category",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-category"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/categories/5",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "category_id": 5,
+              "category_name": "Bricks",
+              "parent_id": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-elements",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-elementid",
+        "resource-representations-mapping"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/item_mapping/PART/3001",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART"
+                },
+                "color_id": 5,
+                "color_name": "Synthetic Red",
+                "element_id": "synthetic-shared-element"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART"
+                },
+                "color_id": 11,
+                "color_name": "Synthetic Black",
+                "element_id": "synthetic-shared-element"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-reverse-elements",
+      "basis": "documented-shape-with-synthetic-values",
+      "note": "Authored synthetic catalog fixture. Default representation only; not a live response or website parity claim.",
+      "sources": [
+        "get-item-number"
+      ],
+      "catalog": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/item_mapping/synthetic-shared-element",
+            "headers": {},
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": [
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART"
+                },
+                "color_id": 5,
+                "color_name": "Synthetic Red",
+                "element_id": "synthetic-shared-element"
+              },
+              {
+                "item": {
+                  "no": "3001",
+                  "type": "PART"
+                },
+                "color_id": 11,
+                "color_name": "Synthetic Black",
+                "element_id": "synthetic-shared-element"
+              },
+              {
+                "item": {
+                  "no": "3001old",
+                  "type": "PART"
+                },
+                "color_id": 5,
+                "color_name": "Synthetic Red",
+                "element_id": "synthetic-shared-element"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "strict-oauth-independent-vector",
+      "basis": "documentation-interpretation",
+      "note": "Static expected signature computed independently with Python hmac/hashlib; fixed clock. Window and replay policy are local.",
+      "sources": [
+        "auth",
+        "oauth-core"
+      ],
+      "catalog": true,
+      "validation": true,
+      "steps": [
+        {
+          "request": {
+            "method": "GET",
+            "path": "/api/store/v1/colors/5",
+            "headers": {
+              "Authorization": "OAuth oauth_consumer_key=\"dummy-consumer\", oauth_nonce=\"contract-nonce\", oauth_signature=\"AUq4JD3VHehYmjngZ36od97gaR0%3D\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"1767225600\", oauth_token=\"dummy-token\", oauth_version=\"1.0\""
+            },
+            "body": ""
+          },
+          "expect": {
+            "status": 200,
+            "meta_message": "OK",
+            "data": {
+              "color_id": 5,
+              "color_name": "Synthetic Red",
+              "color_code": "FF0000",
+              "color_type": "Solid"
+            }
+          }
+        }
+      ]
     }
   ]
 }

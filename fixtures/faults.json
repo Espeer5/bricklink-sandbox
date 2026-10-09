@@ -1,0 +1,29 @@
+{
+  "faults": [
+    {
+      "id": "lost-quantity-response",
+      "method": "PUT",
+      "path": "/api/store/v1/inventories/1000",
+      "occurrences": [
+        1
+      ],
+      "phase": "after",
+      "effect": {
+        "kind": "disconnect"
+      }
+    },
+    {
+      "id": "catalog-rate-limit",
+      "method": "GET",
+      "path": "/api/store/v1/items/PART/3001",
+      "occurrences": [
+        2
+      ],
+      "phase": "before",
+      "effect": {
+        "kind": "rate_limit",
+        "retry_after_seconds": 1
+      }
+    }
+  ]
+}
